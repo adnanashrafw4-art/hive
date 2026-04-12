@@ -3,20 +3,19 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>HIVE · Attendance</title>
+<title>HIVE · Attendance Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --y: #F5C518; --dark: #1E1E1E; --mid: #2C2C2C; --card: #262626;
-  --border: #363636; --text: #E8E8E8; --muted: #888;
-  --green: #4CAF85; --red: #E05C5C; --orange: #F0A050; --blue: #5B9CF6; --purple: #A78BFA;
-  --r: 14px;
+  --y:#F5C518; --dark:#1E1E1E; --mid:#2C2C2C; --card:#262626;
+  --border:#363636; --text:#E8E8E8; --muted:#888;
+  --green:#4CAF85; --red:#E05C5C; --orange:#F0A050; --blue:#5B9CF6; --purple:#A78BFA;
+  --r:14px;
 }
 body { font-family:'DM Sans',sans-serif; background:var(--dark); color:var(--text); min-height:100vh; overflow-x:hidden; }
 body::before { content:''; position:fixed; inset:0; background:radial-gradient(circle at 20% 20%,rgba(245,197,24,.04) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(245,197,24,.03) 0%,transparent 50%); pointer-events:none; z-index:0; }
 
-/* Header */
 .header { position:sticky; top:0; z-index:100; background:rgba(30,30,30,.95); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:14px 28px; display:flex; align-items:center; justify-content:space-between; }
 .logo { display:flex; align-items:center; gap:10px; }
 .logo-hex { width:36px; height:36px; background:var(--y); clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:13px; color:var(--dark); animation:pulse 3s ease-in-out infinite; }
@@ -26,18 +25,16 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(c
 .header-right { display:flex; align-items:center; gap:10px; }
 .config-btn { background:var(--card); border:1px solid var(--border); color:var(--muted); padding:8px 16px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all .2s; }
 .config-btn:hover { border-color:var(--y); color:var(--y); }
-.refresh-btn { background:transparent; border:1px solid var(--border); color:var(--muted); width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:16px; transition:all .2s; display:flex; align-items:center; justify-content:center; }
-.refresh-btn:hover { border-color:var(--y); color:var(--y); }
-.refresh-btn.spinning { animation:spin .7s linear infinite; }
+.icon-btn { background:transparent; border:1px solid var(--border); color:var(--muted); width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:16px; transition:all .2s; display:flex; align-items:center; justify-content:center; }
+.icon-btn:hover { border-color:var(--y); color:var(--y); }
+.icon-btn.spinning { animation:spin .7s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
 
-/* Loading overlay */
-.loading-overlay { position:fixed; inset:0; background:rgba(30,30,30,.95); z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+.loading-overlay { position:fixed; inset:0; background:rgba(30,30,30,.96); z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
 .loading-overlay.hidden { display:none; }
 .loading-hex { width:56px; height:56px; background:var(--y); clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:20px; color:var(--dark); animation:pulse 1s ease-in-out infinite; }
 .loading-text { font-size:14px; color:var(--muted); }
 
-/* Setup Banner */
 .setup-banner { background:linear-gradient(135deg,rgba(245,197,24,.12),rgba(245,197,24,.05)); border:1px solid rgba(245,197,24,.3); border-radius:var(--r); padding:20px 24px; margin-bottom:28px; display:flex; align-items:center; gap:16px; }
 .setup-banner p { font-size:14px; color:var(--y); }
 .setup-banner span { font-size:12px; color:var(--muted); display:block; margin-top:3px; }
@@ -45,10 +42,7 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(c
 input.url-input { flex:1; background:var(--dark); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; outline:none; transition:border-color .2s; }
 input.url-input:focus { border-color:var(--y); }
 
-/* Main */
 .main { max-width:1260px; margin:0 auto; padding:32px 24px; position:relative; z-index:1; }
-
-/* Stats */
 .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:16px; margin-bottom:32px; }
 .stat-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:20px 22px; position:relative; overflow:hidden; transition:transform .2s,border-color .2s; }
 .stat-card:hover { transform:translateY(-2px); border-color:rgba(245,197,24,.3); }
@@ -60,7 +54,6 @@ input.url-input:focus { border-color:var(--y); }
 .progress-bar  { height:4px; background:var(--border); border-radius:2px; overflow:hidden; margin-top:8px; }
 .progress-fill { height:100%; background:var(--y); border-radius:2px; transition:width .6s ease; }
 
-/* Tabs */
 .tabs { display:flex; gap:4px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:4px; margin-bottom:28px; width:fit-content; }
 .tab { padding:10px 22px; border-radius:9px; border:none; background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all .2s; }
 .tab:hover { color:var(--text); }
@@ -68,23 +61,22 @@ input.url-input:focus { border-color:var(--y); }
 .panel { display:none; }
 .panel.active { display:block; }
 
-/* Section head */
 .section-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
 .section-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
 
-/* Buttons */
 .btn { padding:10px 20px; border-radius:8px; border:none; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:7px; }
 .btn-primary { background:var(--y); color:var(--dark); font-weight:700; }
 .btn-primary:hover { background:#e0b300; transform:translateY(-1px); }
 .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
 .btn-ghost:hover { border-color:var(--y); color:var(--y); }
+.btn-danger { background:rgba(224,92,92,.15); border:1px solid rgba(224,92,92,.3); color:var(--red); }
+.btn-danger:hover { background:rgba(224,92,92,.3); }
 .btn-green { background:rgba(76,175,133,.15); border:1px solid rgba(76,175,133,.3); color:var(--green); font-weight:600; }
 .btn-green:hover { background:rgba(76,175,133,.28); }
 .btn-blue { background:rgba(91,156,246,.15); border:1px solid rgba(91,156,246,.3); color:var(--blue); font-weight:600; }
 .btn-blue:hover { background:rgba(91,156,246,.28); }
 .btn-sm { padding:6px 14px; font-size:12px; }
 
-/* Cards */
 .cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
 .member-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; display:flex; align-items:center; gap:14px; transition:transform .2s,border-color .2s; }
 .member-card:hover { transform:translateY(-2px); border-color:rgba(245,197,24,.25); }
@@ -94,8 +86,7 @@ input.url-input:focus { border-color:var(--y); }
 .member-role { font-size:12px; color:var(--muted); margin-top:2px; }
 .member-rate { font-family:'Syne',sans-serif; font-weight:700; font-size:18px; color:var(--y); white-space:nowrap; }
 
-/* Session cards */
-.session-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:20px 22px; transition:transform .2s,border-color .2s; cursor:pointer; }
+.session-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:20px 22px; transition:transform .2s,border-color .2s; cursor:pointer; position:relative; }
 .session-card:hover { transform:translateY(-2px); border-color:rgba(245,197,24,.3); }
 .session-card.selected { border-color:var(--y); background:rgba(245,197,24,.06); }
 .session-date  { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
@@ -110,7 +101,16 @@ input.url-input:focus { border-color:var(--y); }
 .chip-blue   { background:rgba(91,156,246,.15);   color:var(--blue); }
 .chip-purple { background:rgba(167,139,250,.15);  color:var(--purple); }
 
-/* Attendance layout */
+/* Delete button on session card */
+.session-delete-btn {
+  position:absolute; top:12px; right:12px;
+  background:rgba(224,92,92,.0); border:none; color:transparent;
+  width:28px; height:28px; border-radius:6px; cursor:pointer;
+  font-size:13px; transition:all .2s; display:flex; align-items:center; justify-content:center;
+}
+.session-card:hover .session-delete-btn { background:rgba(224,92,92,.15); color:var(--red); }
+.session-delete-btn:hover { background:rgba(224,92,92,.3) !important; transform:scale(1.1); }
+
 .attendance-split { display:grid; grid-template-columns:310px 1fr; gap:24px; }
 @media (max-width:900px) { .attendance-split { grid-template-columns:1fr; } }
 .att-sessions-list { display:flex; flex-direction:column; gap:10px; max-height:700px; overflow-y:auto; padding-right:4px; }
@@ -118,7 +118,6 @@ input.url-input:focus { border-color:var(--y); }
 .att-sessions-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
 .att-right { background:var(--card); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
 
-/* Sub-tabs */
 .sub-tabs { display:flex; border-bottom:1px solid var(--border); background:rgba(0,0,0,.18); }
 .sub-tab { flex:1; padding:13px 8px; text-align:center; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; border:none; background:transparent; transition:all .2s; border-bottom:2px solid transparent; font-family:'DM Sans',sans-serif; }
 .sub-tab:hover { color:var(--text); }
@@ -128,26 +127,20 @@ input.url-input:focus { border-color:var(--y); }
 .sub-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
 .sub-panel.active { display:block; }
 
-/* Attendance rows */
 .att-member-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); gap:12px; }
 .att-member-row:last-child { border-bottom:none; }
 .att-member-info { display:flex; align-items:center; gap:12px; flex:1; }
 .att-avatar-sm { width:32px; height:32px; border-radius:50%; background:rgba(245,197,24,.1); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-weight:700; font-size:11px; color:var(--y); flex-shrink:0; }
 .att-avatar-guest { width:32px; height:32px; border-radius:50%; background:rgba(91,156,246,.1); border:1px solid rgba(91,156,246,.3); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
 .att-member-name { font-size:14px; font-weight:500; }
-
-/* Status buttons */
 .status-btns { display:flex; gap:5px; }
 .status-btn { width:34px; height:34px; border-radius:8px; border:2px solid transparent; font-size:13px; cursor:pointer; transition:all .12s; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.04); color:var(--muted); }
 .status-btn:hover { transform:scale(1.12); }
 .status-btn.active-present { background:rgba(76,175,133,.2); border-color:var(--green); color:var(--green); }
 .status-btn.active-absent  { background:rgba(224,92,92,.2);  border-color:var(--red);   color:var(--red); }
 .status-btn.active-excused { background:rgba(240,160,80,.2); border-color:var(--orange);color:var(--orange); }
+.bulk-row { display:flex; gap:8px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border); flex-wrap:wrap; align-items:center; }
 
-/* Bulk mark */
-.bulk-row { display:flex; gap:8px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
-
-/* Guests */
 .guest-add-row { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
 .guest-add-row input { flex:1; min-width:130px; background:var(--dark); border:1px solid var(--border); color:var(--text); padding:9px 12px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; outline:none; transition:border-color .2s; }
 .guest-add-row input:focus { border-color:var(--blue); }
@@ -155,7 +148,6 @@ input.url-input:focus { border-color:var(--y); }
 .guest-remove-btn:hover { background:rgba(224,92,92,.28); }
 .guests-empty { text-align:center; padding:24px; color:var(--muted); border:1px dashed var(--border); border-radius:10px; font-size:13px; }
 
-/* Summary */
 .summary-block { margin-bottom:20px; }
 .summary-block-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
 .summary-textarea { width:100%; background:var(--dark); border:1px solid var(--border); color:var(--text); padding:12px 14px; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14px; line-height:1.6; outline:none; resize:vertical; min-height:80px; transition:border-color .2s; }
@@ -173,12 +165,15 @@ input.url-input:focus { border-color:var(--y); }
 .summary-saved-badge { font-size:12px; color:var(--green); opacity:0; transition:opacity .3s; }
 .summary-saved-badge.show { opacity:1; }
 
-/* Saving indicator */
-.saving-dot { width:8px; height:8px; border-radius:50%; background:var(--y); opacity:0; transition:opacity .2s; margin-left:8px; animation:blink 1s ease-in-out infinite; }
-.saving-dot.show { opacity:1; }
+.saving-dot { width:8px; height:8px; border-radius:50%; background:var(--y); opacity:0; transition:opacity .2s; margin-left:4px; }
+.saving-dot.show { opacity:1; animation:blink 1s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-/* Modal */
+/* Confirm modal */
+.confirm-modal { background:var(--mid); border:1px solid rgba(224,92,92,.4); border-radius:18px; padding:32px; width:90%; max-width:400px; animation:slideup .25s ease; }
+.confirm-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; margin-bottom:10px; }
+.confirm-msg   { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:24px; }
+
 .modal-overlay { display:none; position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.75); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
 .modal-overlay.open { display:flex; animation:fadein .2s ease; }
 @keyframes fadein { from{opacity:0} to{opacity:1} }
@@ -191,13 +186,11 @@ input.url-input:focus { border-color:var(--y); }
 .form-input:focus { border-color:var(--y); }
 .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
 
-/* Toast */
 .toast { position:fixed; bottom:28px; right:28px; background:var(--mid); border:1px solid var(--border); padding:12px 20px; border-radius:10px; font-size:14px; transform:translateY(80px); opacity:0; transition:all .3s cubic-bezier(.34,1.56,.64,1); z-index:999; max-width:320px; }
 .toast.show { transform:translateY(0); opacity:1; }
 .toast.success { border-color:var(--green); }
 .toast.error   { border-color:var(--red); }
 
-/* Misc */
 .empty-state { text-align:center; padding:48px 24px; color:var(--muted); }
 .empty-state .hex-big { font-size:52px; margin-bottom:12px; opacity:.25; }
 .empty-state p { font-size:14px; }
@@ -208,7 +201,6 @@ input.url-input:focus { border-color:var(--y); }
 </head>
 <body>
 
-<!-- Loading overlay -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-hex">H</div>
   <div class="loading-text">Loading HIVE data…</div>
@@ -218,52 +210,28 @@ input.url-input:focus { border-color:var(--y); }
   <div class="logo">
     <div class="logo-hex">H</div>
     <div><div class="logo-text">HIVE</div></div>
-    <div class="logo-sub">Attendance</div>
+    <div class="logo-sub">Admin</div>
   </div>
   <div class="header-right">
-    <div class="saving-dot" id="savingDot" title="Saving…"></div>
-    <button class="refresh-btn" onclick="refreshData(this)" title="Refresh data">↻</button>
+    <div class="saving-dot" id="savingDot"></div>
+    <button class="icon-btn" onclick="refreshData(this)" title="Refresh">↻</button>
     <button class="config-btn" onclick="openConfig()">⚙ Configure</button>
   </div>
 </header>
 
 <div class="setup-banner" id="setupBanner">
-  <div>
-    <p>🔗 Connect your Google Sheet</p>
-    <span>Paste your Apps Script Web App URL to get started</span>
-  </div>
+  <div><p>🔗 Connect your Google Sheet</p><span>Paste your Apps Script Web App URL</span></div>
   <input type="text" class="url-input" id="urlInput" placeholder="https://script.google.com/macros/s/.../exec"/>
   <button class="btn btn-primary btn-sm" onclick="saveConfig()">Connect</button>
 </div>
 
 <main class="main">
   <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Members</div>
-      <div class="stat-val" id="statMembers">—</div>
-      <div class="stat-desc">active in HIVE</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Sessions</div>
-      <div class="stat-val" id="statSessions">—</div>
-      <div class="stat-desc">meetings held</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Avg. Attendance</div>
-      <div class="stat-val" id="statRate">—</div>
-      <div class="stat-desc">overall rate</div>
-      <div class="progress-bar"><div class="progress-fill" id="statFill" style="width:0%"></div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Guests</div>
-      <div class="stat-val" id="statGuests">—</div>
-      <div class="stat-desc">across all sessions</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Last Session</div>
-      <div class="stat-val" id="statLast" style="font-size:20px;margin-top:8px">—</div>
-      <div class="stat-desc" id="statLastDate">no sessions yet</div>
-    </div>
+    <div class="stat-card"><div class="stat-label">Members</div><div class="stat-val" id="statMembers">—</div><div class="stat-desc">active in HIVE</div></div>
+    <div class="stat-card"><div class="stat-label">Sessions</div><div class="stat-val" id="statSessions">—</div><div class="stat-desc">meetings held</div></div>
+    <div class="stat-card"><div class="stat-label">Avg. Attendance</div><div class="stat-val" id="statRate">—</div><div class="stat-desc">overall rate</div><div class="progress-bar"><div class="progress-fill" id="statFill" style="width:0%"></div></div></div>
+    <div class="stat-card"><div class="stat-label">Total Guests</div><div class="stat-val" id="statGuests">—</div><div class="stat-desc">across all sessions</div></div>
+    <div class="stat-card"><div class="stat-label">Last Session</div><div class="stat-val" id="statLast" style="font-size:20px;margin-top:8px">—</div><div class="stat-desc" id="statLastDate">no sessions yet</div></div>
   </div>
 
   <div class="tabs">
@@ -272,17 +240,11 @@ input.url-input:focus { border-color:var(--y); }
     <button class="tab" onclick="switchTab('sessions',event)">Sessions</button>
   </div>
 
-  <!-- Attendance -->
   <div class="panel active" id="panel-attendance">
     <div class="attendance-split">
       <div>
-        <div class="section-head">
-          <div class="section-title">Sessions</div>
-          <button class="btn btn-primary btn-sm" onclick="openAddSession()">+ New</button>
-        </div>
-        <div class="att-sessions-list" id="sessionsList">
-          <div class="empty-state"><div class="hex-big">⬡</div><p>No sessions yet.</p></div>
-        </div>
+        <div class="section-head"><div class="section-title">Sessions</div><button class="btn btn-primary btn-sm" onclick="openAddSession()">+ New</button></div>
+        <div class="att-sessions-list" id="sessionsList"><div class="empty-state"><div class="hex-big">⬡</div><p>No sessions yet.</p></div></div>
       </div>
       <div class="att-right" id="attRight">
         <div class="att-placeholder"><div class="hex-icon">⬡</div><p>Select a session to get started</p></div>
@@ -290,26 +252,14 @@ input.url-input:focus { border-color:var(--y); }
     </div>
   </div>
 
-  <!-- Members -->
   <div class="panel" id="panel-members">
-    <div class="section-head">
-      <div class="section-title">Members</div>
-      <button class="btn btn-primary btn-sm" onclick="openAddMember()">+ Add Member</button>
-    </div>
-    <div class="cards-grid" id="membersList">
-      <div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No members yet.</p></div>
-    </div>
+    <div class="section-head"><div class="section-title">Members</div><button class="btn btn-primary btn-sm" onclick="openAddMember()">+ Add Member</button></div>
+    <div class="cards-grid" id="membersList"><div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No members yet.</p></div></div>
   </div>
 
-  <!-- Sessions tab -->
   <div class="panel" id="panel-sessions">
-    <div class="section-head">
-      <div class="section-title">All Sessions</div>
-      <button class="btn btn-primary btn-sm" onclick="openAddSession()">+ New Session</button>
-    </div>
-    <div class="cards-grid" id="sessionCards">
-      <div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No sessions yet.</p></div>
-    </div>
+    <div class="section-head"><div class="section-title">All Sessions</div><button class="btn btn-primary btn-sm" onclick="openAddSession()">+ New Session</button></div>
+    <div class="cards-grid" id="sessionCards"><div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No sessions yet.</p></div></div>
   </div>
 </main>
 
@@ -320,23 +270,29 @@ input.url-input:focus { border-color:var(--y); }
     <div class="form-field"><label class="form-label">Full Name</label><input class="form-input" id="mName" placeholder="e.g. Ahmed Rahman"/></div>
     <div class="form-field"><label class="form-label">Phone (optional)</label><input class="form-input" id="mPhone" placeholder="+971 5X XXX XXXX"/></div>
     <div class="form-field"><label class="form-label">Role</label><input class="form-input" id="mRole" value="Member"/></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('memberModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitMember()">Add to Hive</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('memberModal')">Cancel</button><button class="btn btn-primary" onclick="submitMember()">Add to Hive</button></div>
   </div>
 </div>
 
 <div class="modal-overlay" id="sessionModal">
   <div class="modal">
     <div class="modal-title">New Session</div>
-    <div class="form-field"><label class="form-label">Title</label><input class="form-input" id="sTitle" placeholder="e.g. HIVE Meetup #12"/></div>
+    <div class="form-field"><label class="form-label">Title</label><input class="form-input" id="sTitle" placeholder="e.g. HIVE Meetup #1"/></div>
     <div class="form-field"><label class="form-label">Date</label><input class="form-input" id="sDate" type="date"/></div>
     <div class="form-field"><label class="form-label">Location</label><input class="form-input" id="sLocation" placeholder="Dubai, UAE"/></div>
     <div class="form-field"><label class="form-label">Notes (optional)</label><input class="form-input" id="sNotes" placeholder="Topics, highlights…"/></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('sessionModal')">Cancel</button><button class="btn btn-primary" onclick="submitSession()">Create Session</button></div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="confirm-modal">
+    <div class="confirm-title">🗑 Delete Session?</div>
+    <div class="confirm-msg" id="confirmMsg">This will permanently delete the session and all its attendance records, guests, and summary. This cannot be undone.</div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('sessionModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitSession()">Create Session</button>
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Yes, Delete</button>
     </div>
   </div>
 </div>
@@ -345,27 +301,23 @@ input.url-input:focus { border-color:var(--y); }
   <div class="modal">
     <div class="modal-title">⚙ Configure</div>
     <div class="form-field"><label class="form-label">Apps Script Web App URL</label><input class="form-input" id="configUrl" placeholder="https://script.google.com/macros/s/.../exec"/></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('configModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveConfigFromModal()">Save</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('configModal')">Cancel</button><button class="btn btn-primary" onclick="saveConfigFromModal()">Save</button></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── State — loaded ONCE, everything else is local ─────────────
 let SCRIPT_URL      = localStorage.getItem("hive_script_url") || "";
 let members         = [];
 let sessions        = [];
-let attendance      = [];   // flat array, filtered locally
+let attendance      = [];
 let stats           = {};
 let sessionGuests   = {};
 let sessionSummary  = {};
 let selectedSession = null;
+let pendingDeleteId = null;
 
-// ── Init ──────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("sDate").value = new Date().toISOString().split("T")[0];
   if (SCRIPT_URL) {
@@ -377,38 +329,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ── Single bulk load ──────────────────────────────────────────
-async function loadAll() {
-  document.getElementById("loadingOverlay").classList.remove("hidden");
-  const data = await api("loadAll");
-  document.getElementById("loadingOverlay").classList.add("hidden");
-  if (!data) return;
-
-  members        = data.members        || [];
-  sessions       = data.sessions       || [];
-  attendance     = data.attendance     || [];
-  sessionGuests  = data.guests         || {};
-  sessionSummary = data.summary        || {};
-  stats          = data.stats          || {};
-
-  renderAll();
-}
-
-function renderAll() {
-  renderStats();
-  renderMembers();
-  renderSessions();
-  renderSessionsList();
-  // Re-render open session if one is selected
-  if (selectedSession) {
-    selectedSession = sessions.find(s => s.SessionID === selectedSession.SessionID) || null;
-    if (selectedSession) renderAttendancePanel(selectedSession.SessionID);
-  }
-}
-
-// ── API — fire and forget for writes, await for reads ─────────
 async function api(action, body = {}) {
-  if (!SCRIPT_URL) { showToast("Please configure your Script URL first", "error"); return null; }
+  if (!SCRIPT_URL) { showToast("Please configure your Script URL first","error"); return null; }
   try {
     const url = new URL(SCRIPT_URL);
     url.searchParams.set("action", action);
@@ -417,20 +339,53 @@ async function api(action, body = {}) {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     return data;
-  } catch(e) { showToast("Error: " + e.message, "error"); return null; }
+  } catch(e) { showToast("Error: " + e.message,"error"); return null; }
 }
 
-// Fire-and-forget write (UI updates instantly, saves in background)
 function apiWrite(action, body = {}) {
   showSaving(true);
   api(action, body).then(() => showSaving(false));
 }
+function showSaving(on) { document.getElementById("savingDot").classList.toggle("show", on); }
 
-function showSaving(on) {
-  document.getElementById("savingDot").classList.toggle("show", on);
+async function loadAll() {
+  document.getElementById("loadingOverlay").classList.remove("hidden");
+  const data = await api("loadAll");
+  document.getElementById("loadingOverlay").classList.add("hidden");
+  if (!data) return;
+  members = data.members||[]; sessions = data.sessions||[]; attendance = data.attendance||[];
+  sessionGuests = data.guests||{}; sessionSummary = data.summary||{}; stats = data.stats||{};
+  renderAll();
 }
 
-// ── Stats ─────────────────────────────────────────────────────
+function renderAll() {
+  renderStats(); renderMembers(); renderSessions(); renderSessionsList();
+  if (selectedSession) {
+    selectedSession = sessions.find(s => s.SessionID === selectedSession.SessionID) || null;
+    if (selectedSession) renderAttendancePanel(selectedSession.SessionID);
+  }
+}
+
+function recomputeStats() {
+  const tm = members.length, ts = sessions.length;
+  let tg = 0; Object.values(sessionGuests).forEach(g => tg += g.length);
+  const sessionStats = sessions.map(s => {
+    const r = attendance.filter(a => a.SessionID === s.SessionID);
+    const p = r.filter(a => a.Status==="present").length;
+    const e = r.filter(a => a.Status==="excused").length;
+    const ab= r.filter(a => a.Status==="absent").length;
+    return { sessionId:s.SessionID, title:s.Title, date:s.Date, present:p, excused:e, absent:ab, rate: tm>0?Math.round((p/tm)*100):0 };
+  });
+  const memberStats = members.map(m => {
+    const r = attendance.filter(a => a.MemberID === m.MemberID);
+    const p = r.filter(a => a.Status==="present").length;
+    return { memberId:m.MemberID, name:m.Name, role:m.Role, present:p, total:ts, rate:ts>0?Math.round((p/ts)*100):0 };
+  });
+  const or = ts>0&&tm>0 ? Math.round(attendance.filter(a=>a.Status==="present").length/(ts*tm)*100) : 0;
+  stats = { totalMembers:tm, totalSessions:ts, overallRate:or, totalGuests:tg, sessionStats, memberStats };
+  renderStats();
+}
+
 function renderStats() {
   document.getElementById("statMembers").textContent  = stats.totalMembers  ?? "0";
   document.getElementById("statSessions").textContent = stats.totalSessions ?? "0";
@@ -438,71 +393,27 @@ function renderStats() {
   document.getElementById("statFill").style.width     = (stats.overallRate  ?? 0) + "%";
   document.getElementById("statGuests").textContent   = stats.totalGuests   ?? "0";
   const last = stats.sessionStats?.[0];
-  if (last) {
-    document.getElementById("statLast").textContent     = last.title;
-    document.getElementById("statLastDate").textContent = last.date;
-  }
+  if (last) { document.getElementById("statLast").textContent=last.title; document.getElementById("statLastDate").textContent=last.date; }
 }
 
-// Recompute stats locally (no API call needed)
-function recomputeStats() {
-  const totalMembers  = members.length;
-  const totalSessions = sessions.length;
-  let totalGuests = 0;
-  Object.values(sessionGuests).forEach(g => totalGuests += g.length);
-
-  const sessionStats = sessions.map(s => {
-    const records = attendance.filter(a => a.SessionID === s.SessionID);
-    const present = records.filter(a => a.Status === "present").length;
-    const excused = records.filter(a => a.Status === "excused").length;
-    const absent  = records.filter(a => a.Status === "absent").length;
-    return {
-      sessionId: s.SessionID, title: s.Title, date: s.Date,
-      present, excused, absent,
-      rate: totalMembers > 0 ? Math.round((present / totalMembers) * 100) : 0
-    };
-  });
-
-  const memberStats = members.map(m => {
-    const records = attendance.filter(a => a.MemberID === m.MemberID);
-    const present = records.filter(a => a.Status === "present").length;
-    return {
-      memberId: m.MemberID, name: m.Name, role: m.Role, present,
-      total: totalSessions,
-      rate: totalSessions > 0 ? Math.round((present / totalSessions) * 100) : 0
-    };
-  });
-
-  const overallRate = totalSessions > 0 && totalMembers > 0
-    ? Math.round(attendance.filter(a => a.Status === "present").length / (totalSessions * totalMembers) * 100)
-    : 0;
-
-  stats = { totalMembers, totalSessions, overallRate, totalGuests, sessionStats, memberStats };
-  renderStats();
-}
-
-// ── Tabs ──────────────────────────────────────────────────────
 function switchTab(name, e) {
-  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById("panel-" + name).classList.add("active");
-  if (e) e.currentTarget.classList.add("active");
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById("panel-"+name).classList.add("active");
+  if(e) e.currentTarget.classList.add("active");
 }
 
-// ── Members ───────────────────────────────────────────────────
 function renderMembers() {
   const el = document.getElementById("membersList");
-  if (!members.length) { el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No members yet.</p></div>`; return; }
-  const map = {};
-  (stats.memberStats || []).forEach(ms => map[ms.memberId] = ms);
+  if (!members.length) { el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No members yet.</p></div>`; return; }
+  const map = {}; (stats.memberStats||[]).forEach(ms=>map[ms.memberId]=ms);
   el.innerHTML = members.map(m => {
-    const ms = map[m.MemberID] || {};
-    return `
-    <div class="member-card">
+    const ms=map[m.MemberID]||{};
+    return `<div class="member-card">
       <div class="avatar">${initials(m.Name)}</div>
       <div class="member-info">
         <div class="member-name">${esc(m.Name)}</div>
-        <div class="member-role">${esc(m.Role||"Member")} · ${ms.present||0}/${stats.totalSessions||0} sessions</div>
+        <div class="member-role">${esc(m.Role||"Member")} · ${ms.present||0}/${stats.totalSessions||0}</div>
         <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${ms.rate||0}%"></div></div>
       </div>
       <div class="member-rate">${ms.rate??0}%</div>
@@ -510,59 +421,74 @@ function renderMembers() {
   }).join("");
 }
 
-// ── Sessions sidebar ──────────────────────────────────────────
 function renderSessionsList() {
   const el = document.getElementById("sessionsList");
-  if (!sessions.length) { el.innerHTML = `<div class="empty-state"><div class="hex-big">⬡</div><p>No sessions yet.</p></div>`; return; }
-  const ssMap = {};
-  (stats.sessionStats || []).forEach(s => ssMap[s.sessionId] = s);
+  if (!sessions.length) { el.innerHTML=`<div class="empty-state"><div class="hex-big">⬡</div><p>No sessions yet.</p></div>`; return; }
+  const ssMap={}; (stats.sessionStats||[]).forEach(s=>ssMap[s.sessionId]=s);
   el.innerHTML = sessions.map(s => {
-    const ss = ssMap[s.SessionID] || {};
-    const gc = (sessionGuests[s.SessionID] || []).length;
-    const sel = selectedSession?.SessionID === s.SessionID;
-    return `
-      <div class="session-card ${sel?"selected":""}" onclick="selectSession('${s.SessionID}')">
-        <div class="session-date">${formatDate(s.Date)}</div>
-        <div class="session-title">${esc(s.Title)}</div>
-        <div class="session-loc">📍 ${esc(s.Location||"")}</div>
-        <div class="session-chips">
-          <span class="chip chip-green">✓ ${ss.present||0}</span>
-          <span class="chip chip-red">✗ ${ss.absent||0}</span>
-          ${ss.excused?`<span class="chip chip-orange">~ ${ss.excused}</span>`:""}
-          ${gc?`<span class="chip chip-blue">👤 ${gc}</span>`:""}
-        </div>
-      </div>`;
+    const ss=ssMap[s.SessionID]||{}, gc=(sessionGuests[s.SessionID]||[]).length, sel=selectedSession?.SessionID===s.SessionID;
+    return `<div class="session-card ${sel?"selected":""}" onclick="selectSession('${s.SessionID}')">
+      <button class="session-delete-btn" onclick="event.stopPropagation();promptDelete('${s.SessionID}','${esc(s.Title)}')" title="Delete session">🗑</button>
+      <div class="session-date">${formatDate(s.Date)}</div>
+      <div class="session-title">${esc(s.Title)}</div>
+      <div class="session-loc">📍 ${esc(s.Location||"")}</div>
+      <div class="session-chips">
+        <span class="chip chip-green">✓ ${ss.present||0}</span>
+        <span class="chip chip-red">✗ ${ss.absent||0}</span>
+        ${ss.excused?`<span class="chip chip-orange">~ ${ss.excused}</span>`:""}
+        ${gc?`<span class="chip chip-blue">👤 ${gc}</span>`:""}
+      </div>
+    </div>`;
   }).join("");
 }
 
-// ── Sessions cards tab ────────────────────────────────────────
 function renderSessions() {
   const el = document.getElementById("sessionCards");
-  if (!sessions.length) { el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No sessions yet.</p></div>`; return; }
-  const ssMap = {};
-  (stats.sessionStats || []).forEach(s => ssMap[s.sessionId] = s);
+  if (!sessions.length) { el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No sessions yet.</p></div>`; return; }
+  const ssMap={}; (stats.sessionStats||[]).forEach(s=>ssMap[s.sessionId]=s);
   el.innerHTML = sessions.map(s => {
-    const ss = ssMap[s.SessionID] || {};
-    const gc = (sessionGuests[s.SessionID] || []).length;
-    const hasSummary = !!(sessionSummary[s.SessionID]?.highlights || sessionSummary[s.SessionID]?.decisions);
-    return `
-      <div class="session-card">
-        <div class="session-date">${formatDate(s.Date)}</div>
-        <div class="session-title">${esc(s.Title)}</div>
-        <div class="session-loc">📍 ${esc(s.Location||"")}${s.Notes?" · "+esc(s.Notes):""}</div>
-        <div class="session-chips">
-          <span class="chip chip-green">✓ ${ss.present||0}</span>
-          <span class="chip chip-red">✗ ${ss.absent||0}</span>
-          <span class="chip chip-orange">~ ${ss.excused||0}</span>
-          <span class="chip chip-grey">${ss.rate||0}%</span>
-          ${gc?`<span class="chip chip-blue">👤 ${gc}</span>`:""}
-          ${hasSummary?`<span class="chip chip-purple">📝</span>`:""}
-        </div>
-      </div>`;
+    const ss=ssMap[s.SessionID]||{}, gc=(sessionGuests[s.SessionID]||[]).length, hasSummary=!!(sessionSummary[s.SessionID]?.highlights||sessionSummary[s.SessionID]?.decisions);
+    return `<div class="session-card" onclick="promptDelete('${s.SessionID}','${esc(s.Title)}')">
+      <button class="session-delete-btn" title="Delete">🗑</button>
+      <div class="session-date">${formatDate(s.Date)}</div>
+      <div class="session-title">${esc(s.Title)}</div>
+      <div class="session-loc">📍 ${esc(s.Location||"")}${s.Notes?" · "+esc(s.Notes):""}</div>
+      <div class="session-chips">
+        <span class="chip chip-green">✓ ${ss.present||0}</span>
+        <span class="chip chip-red">✗ ${ss.absent||0}</span>
+        <span class="chip chip-orange">~ ${ss.excused||0}</span>
+        <span class="chip chip-grey">${ss.rate||0}%</span>
+        ${gc?`<span class="chip chip-blue">👤 ${gc}</span>`:""}
+        ${hasSummary?`<span class="chip chip-purple">📝</span>`:""}
+      </div>
+    </div>`;
   }).join("");
 }
 
-// ── Select session — instant render from local data ───────────
+// Fix session cards tab — cards should open attendance, not delete
+function renderSessions() {
+  const el = document.getElementById("sessionCards");
+  if (!sessions.length) { el.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No sessions yet.</p></div>`; return; }
+  const ssMap={}; (stats.sessionStats||[]).forEach(s=>ssMap[s.sessionId]=s);
+  el.innerHTML = sessions.map(s => {
+    const ss=ssMap[s.SessionID]||{}, gc=(sessionGuests[s.SessionID]||[]).length, hasSummary=!!(sessionSummary[s.SessionID]?.highlights||sessionSummary[s.SessionID]?.decisions);
+    return `<div class="session-card" style="cursor:default">
+      <button class="session-delete-btn" onclick="promptDelete('${s.SessionID}','${esc(s.Title)}')" title="Delete">🗑</button>
+      <div class="session-date">${formatDate(s.Date)}</div>
+      <div class="session-title">${esc(s.Title)}</div>
+      <div class="session-loc">📍 ${esc(s.Location||"")}${s.Notes?" · "+esc(s.Notes):""}</div>
+      <div class="session-chips">
+        <span class="chip chip-green">✓ ${ss.present||0}</span>
+        <span class="chip chip-red">✗ ${ss.absent||0}</span>
+        <span class="chip chip-orange">~ ${ss.excused||0}</span>
+        <span class="chip chip-grey">${ss.rate||0}%</span>
+        ${gc?`<span class="chip chip-blue">👤 ${gc}</span>`:""}
+        ${hasSummary?`<span class="chip chip-purple">📝</span>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
 function selectSession(sessionId) {
   selectedSession = sessions.find(s => s.SessionID === sessionId);
   renderSessionsList();
@@ -572,8 +498,7 @@ function selectSession(sessionId) {
 function renderAttendancePanel(sessionId) {
   if (!sessionGuests[sessionId])  sessionGuests[sessionId]  = [];
   if (!sessionSummary[sessionId]) sessionSummary[sessionId] = { highlights:"", decisions:"", actionItems:[] };
-
-  const s      = sessions.find(s => s.SessionID === sessionId);
+  const s = sessions.find(s => s.SessionID === sessionId);
   const lookup = {};
   attendance.filter(a => a.SessionID === sessionId).forEach(a => lookup[a.MemberID] = a.Status);
 
@@ -583,18 +508,13 @@ function renderAttendancePanel(sessionId) {
       <button class="sub-tab"        id="stab-guests"  onclick="switchSubTab('guests')">🌟 Guests</button>
       <button class="sub-tab"        id="stab-summary" onclick="switchSubTab('summary')">📝 Summary</button>
     </div>
-
-    <!-- Members sub-panel -->
     <div class="sub-panel active" id="spanel-att">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div>
-          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700">${esc(s.Title)}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">${formatDate(s.Date)}</div>
-        </div>
+        <div><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700">${esc(s.Title)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${formatDate(s.Date)}</div></div>
       </div>
-      <!-- Bulk actions -->
       <div class="bulk-row">
-        <span style="font-size:12px;color:var(--muted);align-self:center;margin-right:4px">Mark all:</span>
+        <span style="font-size:12px;color:var(--muted)">Mark all:</span>
         <button class="btn btn-sm btn-green" onclick="markAll('${sessionId}','present')">✓ Present</button>
         <button class="btn btn-sm btn-ghost" onclick="markAll('${sessionId}','absent')">✗ Absent</button>
         <button class="btn btn-sm btn-ghost" onclick="markAll('${sessionId}','excused')">~ Excused</button>
@@ -603,268 +523,203 @@ function renderAttendancePanel(sessionId) {
         <span>Member</span><span>✓</span><span>✗</span><span>~</span>
       </div>
       ${members.map(m => `
-        <div class="att-member-row" id="row-${m.MemberID}">
+        <div class="att-member-row">
           <div class="att-member-info">
             <div class="att-avatar-sm">${initials(m.Name)}</div>
-            <div>
-              <div class="att-member-name">${esc(m.Name)}</div>
-              <div style="font-size:11px;color:var(--muted)">${esc(m.Role||"Member")}</div>
-            </div>
+            <div><div class="att-member-name">${esc(m.Name)}</div>
+            <div style="font-size:11px;color:var(--muted)">${esc(m.Role||"Member")}</div></div>
           </div>
           <div class="status-btns" id="btns-${m.MemberID}">
-            <button class="status-btn ${lookup[m.MemberID]==="present"?"active-present":""}" onclick="markAtt('${sessionId}','${m.MemberID}','present')" title="Present">✓</button>
-            <button class="status-btn ${lookup[m.MemberID]==="absent"?"active-absent":""}"   onclick="markAtt('${sessionId}','${m.MemberID}','absent')"  title="Absent">✗</button>
-            <button class="status-btn ${lookup[m.MemberID]==="excused"?"active-excused":""}" onclick="markAtt('${sessionId}','${m.MemberID}','excused')" title="Excused">~</button>
+            <button class="status-btn ${lookup[m.MemberID]==="present"?"active-present":""}" onclick="markAtt('${sessionId}','${m.MemberID}','present')">✓</button>
+            <button class="status-btn ${lookup[m.MemberID]==="absent"?"active-absent":""}"   onclick="markAtt('${sessionId}','${m.MemberID}','absent')">✗</button>
+            <button class="status-btn ${lookup[m.MemberID]==="excused"?"active-excused":""}" onclick="markAtt('${sessionId}','${m.MemberID}','excused')">~</button>
           </div>
         </div>`).join("")}
     </div>
-
-    <!-- Guests sub-panel -->
     <div class="sub-panel" id="spanel-guests">
-      <div style="margin-bottom:16px">
-        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px">Session Guests</div>
-        <div style="font-size:12px;color:var(--muted)">People who attended as guests — not regular members</div>
-      </div>
+      <div style="margin-bottom:16px"><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px">Session Guests</div>
+      <div style="font-size:12px;color:var(--muted)">People who attended as guests</div></div>
       <div class="guest-add-row">
-        <input id="guestName"  placeholder="Full name *"/>
-        <input id="guestOrg"   placeholder="Company / Org"/>
+        <input id="guestName" placeholder="Full name *"/>
+        <input id="guestOrg"  placeholder="Company / Org"/>
         <input id="guestPhone" placeholder="Phone (optional)"/>
         <button class="btn btn-blue btn-sm" onclick="addGuest('${sessionId}')">+ Add</button>
       </div>
       <div id="guestList"></div>
     </div>
-
-    <!-- Summary sub-panel -->
     <div class="sub-panel" id="spanel-summary">
-      <div style="margin-bottom:16px">
-        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px">Meeting Summary</div>
-        <div style="font-size:12px;color:var(--muted)">${esc(s.Title)} · ${formatDate(s.Date)}</div>
-      </div>
-      <div class="summary-block">
-        <div class="summary-block-label">💡 Highlights & Topics</div>
-        <textarea class="summary-textarea" id="sumHighlights" placeholder="Key topics, presentations, announcements…" rows="4">${esc(sessionSummary[sessionId]?.highlights||"")}</textarea>
-      </div>
-      <div class="summary-block">
-        <div class="summary-block-label">✅ Decisions Made</div>
-        <textarea class="summary-textarea" id="sumDecisions" placeholder="What was decided or agreed upon…" rows="3">${esc(sessionSummary[sessionId]?.decisions||"")}</textarea>
-      </div>
-      <div class="summary-block">
-        <div class="summary-block-label">📌 Action Items</div>
+      <div style="margin-bottom:16px"><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px">Meeting Summary</div>
+      <div style="font-size:12px;color:var(--muted)">${esc(s.Title)} · ${formatDate(s.Date)}</div></div>
+      <div class="summary-block"><div class="summary-block-label">💡 Highlights & Topics</div>
+        <textarea class="summary-textarea" id="sumHighlights" placeholder="Key topics, presentations, announcements…" rows="4">${esc(sessionSummary[sessionId]?.highlights||"")}</textarea></div>
+      <div class="summary-block"><div class="summary-block-label">✅ Decisions Made</div>
+        <textarea class="summary-textarea" id="sumDecisions" placeholder="What was decided or agreed upon…" rows="3">${esc(sessionSummary[sessionId]?.decisions||"")}</textarea></div>
+      <div class="summary-block"><div class="summary-block-label">📌 Action Items</div>
         <div class="action-items-list" id="actionItemsList"></div>
         <div style="display:flex;gap:8px;margin-top:6px">
           <input class="form-input" id="newActionItem" placeholder="Add an action item…" style="font-size:13px;padding:9px 12px" onkeydown="if(event.key==='Enter')addActionItem('${sessionId}')"/>
           <button class="btn btn-ghost btn-sm" onclick="addActionItem('${sessionId}')">+ Add</button>
-        </div>
-      </div>
+        </div></div>
       <hr class="divider"/>
       <div class="summary-save-row">
         <span class="summary-saved-badge" id="summarySavedBadge">✓ Saved</span>
         <button class="btn btn-primary btn-sm" onclick="saveSummary('${sessionId}')">Save Summary</button>
       </div>
-    </div>
-  `;
+    </div>`;
 
   renderGuestList(sessionId);
   renderActionItems(sessionId);
 }
 
-// ── Sub-tabs ──────────────────────────────────────────────────
 function switchSubTab(name) {
-  document.querySelectorAll(".sub-tab").forEach(t  => t.classList.remove("active"));
-  document.querySelectorAll(".sub-panel").forEach(p => p.classList.remove("active"));
-  document.getElementById("stab-"   + name)?.classList.add("active");
-  document.getElementById("spanel-" + name)?.classList.add("active");
+  document.querySelectorAll(".sub-tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll(".sub-panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("stab-"+name)?.classList.add("active");
+  document.getElementById("spanel-"+name)?.classList.add("active");
 }
 
-// ── Mark attendance — instant UI update, background save ──────
+// ── Delete Session ────────────────────────────────────────────
+function promptDelete(sessionId, title) {
+  pendingDeleteId = sessionId;
+  document.getElementById("confirmMsg").textContent = `"${title}" and all its attendance records, guests, and summary will be permanently deleted. This cannot be undone.`;
+  document.getElementById("confirmModal").classList.add("open");
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  closeModal("confirmModal");
+  showSaving(true);
+  const data = await api("deleteSession", { sessionId: pendingDeleteId });
+  showSaving(false);
+  if (data?.success) {
+    // Remove from local state
+    sessions       = sessions.filter(s => s.SessionID !== pendingDeleteId);
+    attendance     = attendance.filter(a => a.SessionID !== pendingDeleteId);
+    delete sessionGuests[pendingDeleteId];
+    delete sessionSummary[pendingDeleteId];
+    if (selectedSession?.SessionID === pendingDeleteId) {
+      selectedSession = null;
+      document.getElementById("attRight").innerHTML = `<div class="att-placeholder"><div class="hex-icon">⬡</div><p>Select a session to get started</p></div>`;
+    }
+    pendingDeleteId = null;
+    recomputeStats();
+    renderSessionsList();
+    renderSessions();
+    showToast("Session deleted");
+  }
+}
+
 function markAtt(sessionId, memberId, status) {
-  // Update local state instantly
-  const existing = attendance.find(a => a.SessionID === sessionId && a.MemberID === memberId);
-  if (existing) {
-    existing.Status = status;
-  } else {
-    attendance.push({ SessionID: sessionId, MemberID: memberId, Status: status });
-  }
-
-  // Update UI instantly
-  const btns = document.getElementById("btns-" + memberId);
+  const existing = attendance.find(a => a.SessionID===sessionId && a.MemberID===memberId);
+  if (existing) existing.Status=status;
+  else attendance.push({ SessionID:sessionId, MemberID:memberId, Status:status });
+  const btns = document.getElementById("btns-"+memberId);
   if (btns) {
-    btns.querySelectorAll(".status-btn").forEach(b => b.classList.remove("active-present","active-absent","active-excused"));
-    btns.querySelectorAll(".status-btn")[["present","absent","excused"].indexOf(status)]?.classList.add("active-" + status);
+    btns.querySelectorAll(".status-btn").forEach(b=>b.classList.remove("active-present","active-absent","active-excused"));
+    btns.querySelectorAll(".status-btn")[["present","absent","excused"].indexOf(status)]?.classList.add("active-"+status);
   }
-
-  recomputeStats();
-  renderSessionsList();
-
-  // Save in background — no await, no loading state
+  recomputeStats(); renderSessionsList();
   apiWrite("markAttendance", { sessionId, memberId, status });
 }
 
-// ── Mark all members at once ──────────────────────────────────
-function markAll(sessionId, status) {
-  members.forEach(m => markAtt(sessionId, m.MemberID, status));
-}
+function markAll(sessionId, status) { members.forEach(m => markAtt(sessionId, m.MemberID, status)); }
 
-// ── Guests ────────────────────────────────────────────────────
 function renderGuestList(sessionId) {
-  const guests = sessionGuests[sessionId] || [];
-  const el     = document.getElementById("guestList");
+  const guests=sessionGuests[sessionId]||[], el=document.getElementById("guestList");
   if (!el) return;
-  if (!guests.length) {
-    el.innerHTML = `<div class="guests-empty">No guests yet for this session.</div>`; return;
-  }
-  el.innerHTML = `
-    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">${guests.length} Guest${guests.length>1?"s":""}</div>
-    ${guests.map((g,i) => `
-      <div class="att-member-row">
-        <div class="att-member-info">
-          <div class="att-avatar-guest">👤</div>
-          <div>
-            <div class="att-member-name">${esc(g.name)}</div>
-            <div style="font-size:11px;color:var(--muted)">${g.org?esc(g.org):"Guest"}${g.phone?" · "+esc(g.phone):""}</div>
-          </div>
-        </div>
-        <button class="guest-remove-btn" onclick="removeGuest('${sessionId}',${i})">✕</button>
-      </div>`).join("")}`;
+  if (!guests.length) { el.innerHTML=`<div class="guests-empty">No guests yet for this session.</div>`; return; }
+  el.innerHTML=`<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">${guests.length} Guest${guests.length>1?"s":""}</div>
+  ${guests.map((g,i)=>`<div class="att-member-row">
+    <div class="att-member-info"><div class="att-avatar-guest">👤</div>
+      <div><div class="att-member-name">${esc(g.name)}</div>
+      <div style="font-size:11px;color:var(--muted)">${g.org?esc(g.org):"Guest"}${g.phone?" · "+esc(g.phone):""}</div></div></div>
+    <button class="guest-remove-btn" onclick="removeGuest('${sessionId}',${i})">✕</button>
+  </div>`).join("")}`;
 }
 
 function addGuest(sessionId) {
-  const name  = document.getElementById("guestName")?.value.trim();
-  const org   = document.getElementById("guestOrg")?.value.trim()   || "";
-  const phone = document.getElementById("guestPhone")?.value.trim() || "";
-  if (!name) { showToast("Please enter a guest name", "error"); return; }
-  if (!sessionGuests[sessionId]) sessionGuests[sessionId] = [];
+  const name=document.getElementById("guestName")?.value.trim(), org=document.getElementById("guestOrg")?.value.trim()||"", phone=document.getElementById("guestPhone")?.value.trim()||"";
+  if (!name) { showToast("Please enter a guest name","error"); return; }
+  if (!sessionGuests[sessionId]) sessionGuests[sessionId]=[];
   sessionGuests[sessionId].push({ id:"G"+Date.now(), name, org, phone });
-  document.getElementById("guestName").value = "";
-  document.getElementById("guestOrg").value  = "";
-  document.getElementById("guestPhone").value = "";
-  renderGuestList(sessionId);
-  renderSessionsList();
-  recomputeStats();
-  apiWrite("saveGuests", { sessionId, guests: JSON.stringify(sessionGuests[sessionId]) });
+  document.getElementById("guestName").value=""; document.getElementById("guestOrg").value=""; document.getElementById("guestPhone").value="";
+  renderGuestList(sessionId); renderSessionsList(); recomputeStats();
+  apiWrite("saveGuests",{ sessionId, guests:JSON.stringify(sessionGuests[sessionId]) });
   showToast("Guest added! 👤");
 }
 
 function removeGuest(sessionId, idx) {
-  sessionGuests[sessionId]?.splice(idx, 1);
-  renderGuestList(sessionId);
-  renderSessionsList();
-  recomputeStats();
-  apiWrite("saveGuests", { sessionId, guests: JSON.stringify(sessionGuests[sessionId]) });
+  sessionGuests[sessionId]?.splice(idx,1);
+  renderGuestList(sessionId); renderSessionsList(); recomputeStats();
+  apiWrite("saveGuests",{ sessionId, guests:JSON.stringify(sessionGuests[sessionId]) });
 }
 
-// ── Action Items ──────────────────────────────────────────────
 function renderActionItems(sessionId) {
-  const items = sessionSummary[sessionId]?.actionItems || [];
-  const el    = document.getElementById("actionItemsList");
+  const items=sessionSummary[sessionId]?.actionItems||[], el=document.getElementById("actionItemsList");
   if (!el) return;
-  if (!items.length) { el.innerHTML = `<div style="font-size:13px;color:var(--muted);padding:4px 0">No action items yet.</div>`; return; }
-  el.innerHTML = items.map((item,i) => `
-    <div class="action-item">
-      <input type="checkbox" ${item.done?"checked":""} onchange="toggleActionItem('${sessionId}',${i})"/>
-      <input type="text" class="action-item-text ${item.done?"done":""}" value="${esc(item.text)}" onchange="updateActionItemText('${sessionId}',${i},this.value)"/>
-      <button class="action-item-del" onclick="deleteActionItem('${sessionId}',${i})">✕</button>
-    </div>`).join("");
+  if (!items.length) { el.innerHTML=`<div style="font-size:13px;color:var(--muted);padding:4px 0">No action items yet.</div>`; return; }
+  el.innerHTML=items.map((item,i)=>`<div class="action-item">
+    <input type="checkbox" ${item.done?"checked":""} onchange="toggleActionItem('${sessionId}',${i})"/>
+    <input type="text" class="action-item-text ${item.done?"done":""}" value="${esc(item.text)}" onchange="updateActionItemText('${sessionId}',${i},this.value)"/>
+    <button class="action-item-del" onclick="deleteActionItem('${sessionId}',${i})">✕</button>
+  </div>`).join("");
 }
-
-function addActionItem(sessionId) {
-  const input = document.getElementById("newActionItem");
-  const text  = input?.value.trim();
-  if (!text) return;
-  if (!sessionSummary[sessionId]) sessionSummary[sessionId] = { highlights:"", decisions:"", actionItems:[] };
-  sessionSummary[sessionId].actionItems.push({ text, done:false });
-  input.value = "";
-  renderActionItems(sessionId);
+function addActionItem(sid) {
+  const input=document.getElementById("newActionItem"), text=input?.value.trim(); if(!text) return;
+  if(!sessionSummary[sid]) sessionSummary[sid]={highlights:"",decisions:"",actionItems:[]};
+  sessionSummary[sid].actionItems.push({text,done:false}); input.value=""; renderActionItems(sid);
 }
-function toggleActionItem(sessionId, i) {
-  if (sessionSummary[sessionId]?.actionItems?.[i] !== undefined) {
-    sessionSummary[sessionId].actionItems[i].done = !sessionSummary[sessionId].actionItems[i].done;
-    renderActionItems(sessionId);
-  }
-}
-function updateActionItemText(sessionId, i, val) {
-  if (sessionSummary[sessionId]?.actionItems?.[i]) sessionSummary[sessionId].actionItems[i].text = val;
-}
-function deleteActionItem(sessionId, i) {
-  sessionSummary[sessionId]?.actionItems?.splice(i,1);
-  renderActionItems(sessionId);
-}
+function toggleActionItem(sid,i) { if(sessionSummary[sid]?.actionItems?.[i]!==undefined){sessionSummary[sid].actionItems[i].done=!sessionSummary[sid].actionItems[i].done;renderActionItems(sid);} }
+function updateActionItemText(sid,i,val) { if(sessionSummary[sid]?.actionItems?.[i]) sessionSummary[sid].actionItems[i].text=val; }
+function deleteActionItem(sid,i) { sessionSummary[sid]?.actionItems?.splice(i,1); renderActionItems(sid); }
 
 async function saveSummary(sessionId) {
-  const highlights  = document.getElementById("sumHighlights")?.value || "";
-  const decisions   = document.getElementById("sumDecisions")?.value  || "";
-  const actionItems = sessionSummary[sessionId]?.actionItems || [];
-  sessionSummary[sessionId] = { highlights, decisions, actionItems };
-  await api("saveSummary", { sessionId, highlights, decisions, actionItems: JSON.stringify(actionItems) });
-  const badge = document.getElementById("summarySavedBadge");
-  badge?.classList.add("show");
-  setTimeout(() => badge?.classList.remove("show"), 2500);
+  const h=document.getElementById("sumHighlights")?.value||"", d=document.getElementById("sumDecisions")?.value||"", ai=sessionSummary[sessionId]?.actionItems||[];
+  sessionSummary[sessionId]={highlights:h,decisions:d,actionItems:ai};
+  await api("saveSummary",{sessionId,highlights:h,decisions:d,actionItems:JSON.stringify(ai)});
+  document.getElementById("summarySavedBadge")?.classList.add("show");
+  setTimeout(()=>document.getElementById("summarySavedBadge")?.classList.remove("show"),2500);
   renderSessions();
 }
 
-// ── Add Member ────────────────────────────────────────────────
 async function submitMember() {
   const name=document.getElementById("mName").value.trim(), phone=document.getElementById("mPhone").value.trim(), role=document.getElementById("mRole").value.trim();
-  if (!name) { showToast("Please enter a name","error"); return; }
-  const data = await api("addMember",{name,phone,role});
-  if (data?.success) {
-    members.push({ MemberID: data.memberId, Name: name, Phone: phone, Role: role||"Member", Active: true });
-    showToast("Member added! 🐝");
-    closeModal("memberModal");
-    document.getElementById("mName").value=""; document.getElementById("mPhone").value="";
-    recomputeStats(); renderMembers();
-  }
+  if(!name){showToast("Please enter a name","error");return;}
+  const data=await api("addMember",{name,phone,role});
+  if(data?.success){members.push({MemberID:data.memberId,Name:name,Phone:phone,Role:role||"Member",Active:true});showToast("Member added! 🐝");closeModal("memberModal");document.getElementById("mName").value="";document.getElementById("mPhone").value="";recomputeStats();renderMembers();}
 }
 
-// ── Add Session ───────────────────────────────────────────────
 async function submitSession() {
   const title=document.getElementById("sTitle").value.trim(), date=document.getElementById("sDate").value, location=document.getElementById("sLocation").value.trim(), notes=document.getElementById("sNotes").value.trim();
-  if (!title||!date) { showToast("Please fill in title and date","error"); return; }
-  const data = await api("addSession",{title,date,location,notes});
-  if (data?.success) {
-    sessions.unshift({ SessionID: data.sessionId, Title: title, Date: date, Location: location, Notes: notes });
-    showToast("Session created! ⬡");
-    closeModal("sessionModal");
-    recomputeStats(); renderSessionsList(); renderSessions();
-  }
+  if(!title||!date){showToast("Please fill in title and date","error");return;}
+  const data=await api("addSession",{title,date,location,notes});
+  if(data?.success){sessions.unshift({SessionID:data.sessionId,Title:title,Date:date,Location:location,Notes:notes});showToast("Session created! ⬡");closeModal("sessionModal");recomputeStats();renderSessionsList();renderSessions();}
 }
 
-// ── Refresh ───────────────────────────────────────────────────
-async function refreshData(btn) {
-  btn.classList.add("spinning");
-  await loadAll();
-  btn.classList.remove("spinning");
-  showToast("Data refreshed!");
-}
+async function refreshData(btn) { btn.classList.add("spinning"); await loadAll(); btn.classList.remove("spinning"); showToast("Data refreshed!"); }
 
-// ── Modals ────────────────────────────────────────────────────
 function openAddMember()  { document.getElementById("memberModal").classList.add("open"); }
 function openAddSession() { document.getElementById("sessionModal").classList.add("open"); }
 function openConfig()     { document.getElementById("configUrl").value=SCRIPT_URL; document.getElementById("configModal").classList.add("open"); }
 function closeModal(id)   { document.getElementById(id).classList.remove("open"); }
-document.querySelectorAll(".modal-overlay").forEach(o => o.addEventListener("click", e => { if(e.target===o) o.classList.remove("open"); }));
+document.querySelectorAll(".modal-overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("open");}));
 
 function saveConfig() {
   const url=document.getElementById("urlInput").value.trim(); if(!url) return;
   SCRIPT_URL=url; localStorage.setItem("hive_script_url",url);
-  document.getElementById("setupBanner").classList.add("hidden");
-  showToast("Connected!"); loadAll();
+  document.getElementById("setupBanner").classList.add("hidden"); showToast("Connected!"); loadAll();
 }
 function saveConfigFromModal() {
   const url=document.getElementById("configUrl").value.trim(); if(!url) return;
-  SCRIPT_URL=url; localStorage.setItem("hive_script_url",url);
-  document.getElementById("urlInput").value=url;
-  document.getElementById("setupBanner").classList.add("hidden");
-  closeModal("configModal"); showToast("Saved!"); loadAll();
+  SCRIPT_URL=url; localStorage.setItem("hive_script_url",url); document.getElementById("urlInput").value=url;
+  document.getElementById("setupBanner").classList.add("hidden"); closeModal("configModal"); showToast("Saved!"); loadAll();
 }
 
-// ── Helpers ───────────────────────────────────────────────────
 function initials(name) { return (name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase(); }
 function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-function formatDate(d) { if(!d) return "—"; try { return new Date(d).toLocaleDateString("en-AE",{day:"numeric",month:"short",year:"numeric"}); } catch{ return d; } }
+function formatDate(d) { if(!d) return "—"; try{return new Date(d).toLocaleDateString("en-AE",{day:"numeric",month:"short",year:"numeric"});}catch{return d;} }
 function showToast(msg,type="success") {
-  const t=document.getElementById("toast");
-  t.textContent=(type==="success"?"✓ ":"✗ ")+msg; t.className="toast "+type+" show";
+  const t=document.getElementById("toast"); t.textContent=(type==="success"?"✓ ":"✗ ")+msg; t.className="toast "+type+" show";
   setTimeout(()=>t.classList.remove("show"),3000);
 }
 </script>
