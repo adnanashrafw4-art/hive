@@ -211,7 +211,8 @@ input.url-input:focus { border-color:var(--y); }
 </main>
 
 <script>
-let SCRIPT_URL    = localStorage.getItem("hive_script_url") || "";
+let SCRIPT_URL    = "https://script.google.com/macros/s/AKfycbwcVAbTkxcY_rhkk-VJ27laXDKatgZAnQFlbEwlxJxsQwMdv-aI2PfeMuft6tSfGQ6J6w/exec";
+localStorage.setItem("hive_script_url", SCRIPT_URL);
 let allMembers    = [];
 let allSessions   = [];
 let allAttendance = [];
