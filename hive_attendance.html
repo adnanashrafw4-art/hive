@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HIVE · Attendance Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset & Base ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hive-yellow: #F5C518;
+  --hive-dark:   #1E1E1E;
+  --hive-mid:    #2C2C2C;
+  --hive-card:   #262626;
+  --hive-border: #363636;
+  --hive-text:   #E8E8E8;
+  --hive-muted:  #888;
+  --green:  #4CAF85;
+  --red:    #E05C5C;
+  --orange: #F0A050;
+  --r: 14px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--hive-dark);
+  color: var(--hive-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Honeycomb background ─────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(245,197,24,0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(245,197,24,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Header ──────────────────────────────────── */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(30,30,30,0.9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--hive-border);
+  padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+}
+
+.logo-hex {
+  width: 36px; height: 36px;
+  background: var(--hive-yellow);
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 13px;
+  color: var(--hive-dark);
+  animation: pulse-hex 3s ease-in-out infinite;
+}
+
+@keyframes pulse-hex {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.logo-text {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 20px;
+  letter-spacing: 2px;
+  color: var(--hive-yellow);
+}
+
+.logo-sub {
+  font-size: 11px; color: var(--hive-muted);
+  margin-left: 6px; margin-top: 2px;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+
+.config-btn {
+  background: var(--hive-card);
+  border: 1px solid var(--hive-border);
+  color: var(--hive-muted);
+  padding: 8px 16px; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; cursor: pointer;
+  transition: all .2s;
+}
+.config-btn:hover { border-color: var(--hive-yellow); color: var(--hive-yellow); }
+
+/* ── Layout ──────────────────────────────────── */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  position: relative; z-index: 1;
+}
+
+/* ── Setup Banner ────────────────────────────── */
+.setup-banner {
+  background: linear-gradient(135deg, rgba(245,197,24,0.12), rgba(245,197,24,0.05));
+  border: 1px solid rgba(245,197,24,0.3);
+  border-radius: var(--r);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.setup-banner p { font-size: 14px; color: var(--hive-yellow); }
+.setup-banner span { font-size: 12px; color: var(--hive-muted); display: block; margin-top: 3px; }
+.setup-banner.hidden { display: none; }
+
+input.url-input {
+  flex: 1;
+  background: var(--hive-dark);
+  border: 1px solid var(--hive-border);
+  color: var(--hive-text);
+  padding: 10px 14px; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+}
+input.url-input:focus { border-color: var(--hive-yellow); }
+
+/* ── Stat Cards ──────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: var(--hive-card);
+  border: 1px solid var(--hive-border);
+  border-radius: var(--r);
+  padding: 20px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s, border-color .2s;
+}
+.stat-card:hover { transform: translateY(-2px); border-color: rgba(245,197,24,0.3); }
+.stat-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--hive-yellow);
+  transform: scaleX(0);
+  transition: transform .3s;
+}
+.stat-card:hover::after { transform: scaleX(1); }
+
+.stat-label { font-size: 11px; color: var(--hive-muted); letter-spacing: 1px; text-transform: uppercase; }
+.stat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px; font-weight: 800;
+  color: var(--hive-yellow);
+  line-height: 1.1; margin: 6px 0 2px;
+}
+.stat-desc { font-size: 12px; color: var(--hive-muted); }
+
+/* ── Tabs ────────────────────────────────────── */
+.tabs {
+  display: flex; gap: 4px;
+  background: var(--hive-card);
+  border: 1px solid var(--hive-border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 28px;
+  width: fit-content;
+}
+
+.tab {
+  padding: 10px 22px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--hive-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+}
+.tab:hover { color: var(--hive-text); }
+.tab.active {
+  background: var(--hive-yellow);
+  color: var(--hive-dark);
+  font-weight: 700;
+}
+
+/* ── Panels ──────────────────────────────────── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── Section Header ──────────────────────────── */
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 700;
+}
+
+/* ── Buttons ─────────────────────────────────── */
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-primary {
+  background: var(--hive-yellow);
+  color: var(--hive-dark);
+  font-weight: 700;
+}
+.btn-primary:hover { background: #e0b300; transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--hive-border);
+  color: var(--hive-muted);
+}
+.btn-ghost:hover { border-color: var(--hive-yellow); color: var(--hive-yellow); }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+
+/* ── Cards Grid ──────────────────────────────── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ── Member Card ─────────────────────────────── */
+.member-card {
+  background: var(--hive-card);
+  border: 1px solid var(--hive-border);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  display: flex; align-items: center; gap: 14px;
+  transition: transform .2s, border-color .2s;
+}
+.member-card:hover { transform: translateY(-2px); border-color: rgba(245,197,24,0.25); }
+
+.avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(245,197,24,0.15);
+  border: 2px solid rgba(245,197,24,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 16px;
+  color: var(--hive-yellow);
+  flex-shrink: 0;
+}
+
+.member-info { flex: 1; min-width: 0; }
+.member-name {
+  font-weight: 600; font-size: 15px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.member-role {
+  font-size: 12px; color: var(--hive-muted);
+  margin-top: 2px;
+}
+.member-rate {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 18px;
+  color: var(--hive-yellow);
+  white-space: nowrap;
+}
+
+/* ── Session Card ────────────────────────────── */
+.session-card {
+  background: var(--hive-card);
+  border: 1px solid var(--hive-border);
+  border-radius: var(--r);
+  padding: 20px 22px;
+  transition: transform .2s, border-color .2s;
+  cursor: pointer;
+}
+.session-card:hover { transform: translateY(-2px); border-color: rgba(245,197,24,0.3); }
+.session-card.selected {
+  border-color: var(--hive-yellow);
+  background: rgba(245,197,24,0.06);
+}
+
+.session-date {
+  font-size: 12px; color: var(--hive-muted);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.session-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.session-loc {
+  font-size: 12px; color: var(--hive-muted);
+}
+.session-chips {
+  display: flex; gap: 8px; margin-top: 12px;
+}
+.chip {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+}
+.chip-green  { background: rgba(76,175,133,0.15); color: var(--green); }
+.chip-red    { background: rgba(224,92,92,0.15);  color: var(--red); }
+.chip-orange { background: rgba(240,160,80,0.15); color: var(--orange); }
+.chip-grey   { background: rgba(136,136,136,0.15); color: var(--hive-muted); }
+
+/* ── Attendance Panel ─────────────────────────── */
+.attendance-split {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .attendance-split { grid-template-columns: 1fr; }
+}
+
+.att-sessions-list {
+  display: flex; flex-direction: column; gap: 10px;
+  max-height: 600px; overflow-y: auto;
+  padding-right: 4px;
+}
+.att-sessions-list::-webkit-scrollbar { width: 4px; }
+.att-sessions-list::-webkit-scrollbar-thumb { background: var(--hive-border); border-radius: 4px; }
+
+.att-right {
+  background: var(--hive-card);
+  border: 1px solid var(--hive-border);
+  border-radius: var(--r);
+  padding: 24px;
+}
+
+.att-placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 300px; color: var(--hive-muted);
+  gap: 12px;
+}
+.att-placeholder .hex-icon {
+  font-size: 40px; opacity: 0.3;
+}
+
+/* ── Member Attendance Row ───────────────────── */
+.att-member-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--hive-border);
+  gap: 12px;
+}
+.att-member-row:last-child { border-bottom: none; }
+
+.att-member-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+.att-avatar-sm {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(245,197,24,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 12px;
+  color: var(--hive-yellow);
+  flex-shrink: 0;
+}
+.att-member-name { font-size: 14px; font-weight: 500; }
+
+.status-btns { display: flex; gap: 6px; }
+.status-btn {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.05);
+  color: var(--hive-muted);
+}
+.status-btn:hover { transform: scale(1.1); }
+.status-btn.active-present {
+  background: rgba(76,175,133,0.2);
+  border-color: var(--green);
+  color: var(--green);
+}
+.status-btn.active-absent {
+  background: rgba(224,92,92,0.2);
+  border-color: var(--red);
+  color: var(--red);
+}
+.status-btn.active-excused {
+  background: rgba(240,160,80,0.2);
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* ── Modal ───────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; animation: fade-in .2s ease; }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background: var(--hive-mid);
+  border: 1px solid var(--hive-border);
+  border-radius: 18px;
+  padding: 32px;
+  width: 90%; max-width: 440px;
+  animation: slide-up .25s ease;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 800;
+  margin-bottom: 22px;
+}
+
+.form-field { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 12px; color: var(--hive-muted);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 7px;
+}
+.form-input {
+  width: 100%;
+  background: var(--hive-dark);
+  border: 1px solid var(--hive-border);
+  color: var(--hive-text);
+  padding: 11px 14px; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s;
+}
+.form-input:focus { border-color: var(--hive-yellow); }
+
+.modal-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* ── Toast ───────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--hive-mid);
+  border: 1px solid var(--hive-border);
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+  z-index: 999;
+  display: flex; align-items: center; gap: 10px;
+  max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(--green); }
+.toast.error   { border-color: var(--red); }
+
+/* ── Progress bar ────────────────────────────── */
+.progress-bar {
+  height: 4px;
+  background: var(--hive-border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--hive-yellow);
+  border-radius: 2px;
+  transition: width .6s ease;
+}
+
+/* ── Loading ─────────────────────────────────── */
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--hive-border);
+  border-top-color: var(--hive-yellow);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  text-align: center; padding: 48px 24px;
+  color: var(--hive-muted);
+}
+.empty-state .hex-big { font-size: 52px; margin-bottom: 12px; opacity: 0.25; }
+.empty-state p { font-size: 14px; }
+
+/* ── Save indicator ──────────────────────────── */
+.saving-badge {
+  display: none;
+  font-size: 12px; color: var(--hive-muted);
+  align-items: center; gap: 6px;
+}
+.saving-badge.show { display: flex; }
+</style>
+</head>
+
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-hex">H</div>
+    <div>
+      <div class="logo-text">HIVE</div>
+    </div>
+    <div class="logo-sub">Attendance</div>
+  </div>
+  <button class="config-btn" onclick="openConfig()">⚙ Configure</button>
+</header>
+
+<!-- ── Setup Banner ── -->
+<div class="setup-banner" id="setupBanner">
+  <div>
+    <p>🔗 Connect your Google Sheet</p>
+    <span>Paste your Apps Script Web App URL below to get started</span>
+  </div>
+  <input type="text" class="url-input" id="urlInput" placeholder="https://script.google.com/macros/s/.../exec"/>
+  <button class="btn btn-primary btn-sm" onclick="saveConfig()">Connect</button>
+</div>
+
+<!-- ── Main ── -->
+<main class="main">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Members</div>
+      <div class="stat-val" id="statMembers">—</div>
+      <div class="stat-desc">active in HIVE</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Sessions</div>
+      <div class="stat-val" id="statSessions">—</div>
+      <div class="stat-desc">meetings held</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg. Attendance</div>
+      <div class="stat-val" id="statRate">—</div>
+      <div class="stat-desc">overall rate</div>
+      <div class="progress-bar"><div class="progress-fill" id="statFill" style="width:0%"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Last Session</div>
+      <div class="stat-val" id="statLast" style="font-size:22px;margin-top:8px;">—</div>
+      <div class="stat-desc" id="statLastDate">no sessions yet</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('attendance')">Mark Attendance</button>
+    <button class="tab" onclick="switchTab('members')">Members</button>
+    <button class="tab" onclick="switchTab('sessions')">Sessions</button>
+  </div>
+
+  <!-- ── Attendance Panel ── -->
+  <div class="panel active" id="panel-attendance">
+    <div class="attendance-split">
+      <!-- Left: sessions -->
+      <div>
+        <div class="section-head">
+          <div class="section-title">Sessions</div>
+          <button class="btn btn-primary btn-sm" onclick="openAddSession()">+ New</button>
+        </div>
+        <div class="att-sessions-list" id="sessionsList">
+          <div class="empty-state">
+            <div class="hex-big">⬡</div>
+            <p>No sessions yet. Create one!</p>
+          </div>
+        </div>
+      </div>
+      <!-- Right: attendance -->
+      <div class="att-right">
+        <div id="attContent">
+          <div class="att-placeholder">
+            <div class="hex-icon">⬡</div>
+            <p>Select a session to mark attendance</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Members Panel ── -->
+  <div class="panel" id="panel-members">
+    <div class="section-head">
+      <div class="section-title">Members</div>
+      <button class="btn btn-primary btn-sm" onclick="openAddMember()">+ Add Member</button>
+    </div>
+    <div class="cards-grid" id="membersList">
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="hex-big">⬡</div>
+        <p>No members yet. Add your first!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Sessions Panel ── -->
+  <div class="panel" id="panel-sessions">
+    <div class="section-head">
+      <div class="section-title">All Sessions</div>
+      <button class="btn btn-primary btn-sm" onclick="openAddSession()">+ New Session</button>
+    </div>
+    <div class="cards-grid" id="sessionCards">
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="hex-big">⬡</div>
+        <p>No sessions yet.</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ── Add Member Modal ── -->
+<div class="modal-overlay" id="memberModal">
+  <div class="modal">
+    <div class="modal-title">Add Member</div>
+    <div class="form-field">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" id="mName" placeholder="e.g. Ahmed Rahman"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Phone (optional)</label>
+      <input class="form-input" id="mPhone" placeholder="+971 5X XXX XXXX"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Role</label>
+      <input class="form-input" id="mRole" placeholder="Member / Lead / Founder" value="Member"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('memberModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitMember()">Add to Hive</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Session Modal ── -->
+<div class="modal-overlay" id="sessionModal">
+  <div class="modal">
+    <div class="modal-title">New Session</div>
+    <div class="form-field">
+      <label class="form-label">Session Title</label>
+      <input class="form-input" id="sTitle" placeholder="e.g. HIVE Monthly Meetup #12"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Date</label>
+      <input class="form-input" id="sDate" type="date"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Location</label>
+      <input class="form-input" id="sLocation" placeholder="Dubai, UAE"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes (optional)</label>
+      <input class="form-input" id="sNotes" placeholder="Topics, highlights…"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('sessionModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitSession()">Create Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Config Modal ── -->
+<div class="modal-overlay" id="configModal">
+  <div class="modal">
+    <div class="modal-title">⚙ Configuration</div>
+    <div class="form-field">
+      <label class="form-label">Apps Script Web App URL</label>
+      <input class="form-input" id="configUrl" placeholder="https://script.google.com/macros/s/.../exec"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('configModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveConfigFromModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────
+let SCRIPT_URL = localStorage.getItem("hive_script_url") || "";
+let members    = [];
+let sessions   = [];
+let attendance = {};  // { sessionId: { memberId: status } }
+let stats      = {};
+let selectedSession = null;
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  // Pre-fill today's date
+  document.getElementById("sDate").value = new Date().toISOString().split("T")[0];
+
+  if (SCRIPT_URL) {
+    document.getElementById("setupBanner").classList.add("hidden");
+    document.getElementById("configUrl").value = SCRIPT_URL;
+    loadAll();
+  }
+});
+
+// ── API ───────────────────────────────────────────────────────
+async function api(action, body = {}) {
+  if (!SCRIPT_URL) { showToast("Please configure your Script URL first", "error"); return null; }
+  try {
+    const url = new URL(SCRIPT_URL);
+    url.searchParams.set("action", action);
+    Object.entries(body).forEach(([k,v]) => url.searchParams.set(k, v));
+    const res  = await fetch(url.toString());
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  } catch (e) {
+    showToast("Error: " + e.message, "error");
+    return null;
+  }
+}
+
+async function loadAll() {
+  const [m, s, st] = await Promise.all([
+    api("getMembers"),
+    api("getSessions"),
+    api("getStats")
+  ]);
+  if (m)  { members  = m.members;    renderMembers(); }
+  if (s)  { sessions = s.sessions;   renderSessions(); renderSessionsList(); }
+  if (st) { stats    = st;           renderStats(); }
+}
+
+// ── Stats ─────────────────────────────────────────────────────
+function renderStats() {
+  document.getElementById("statMembers").textContent  = stats.totalMembers ?? "0";
+  document.getElementById("statSessions").textContent = stats.totalSessions ?? "0";
+  document.getElementById("statRate").textContent     = (stats.overallRate ?? 0) + "%";
+  document.getElementById("statFill").style.width     = (stats.overallRate ?? 0) + "%";
+
+  const lastSession = stats.sessionStats?.[0];
+  if (lastSession) {
+    document.getElementById("statLast").textContent    = lastSession.title;
+    document.getElementById("statLastDate").textContent = lastSession.date;
+  }
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("panel-" + name).classList.add("active");
+  event.currentTarget.classList.add("active");
+}
+
+// ── Members ───────────────────────────────────────────────────
+function renderMembers() {
+  const el = document.getElementById("membersList");
+  if (!members.length) {
+    el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No members yet.</p></div>`;
+    return;
+  }
+  const memberStatMap = {};
+  (stats.memberStats || []).forEach(ms => memberStatMap[ms.memberId] = ms.rate);
+
+  el.innerHTML = members.map(m => `
+    <div class="member-card">
+      <div class="avatar">${initials(m.Name)}</div>
+      <div class="member-info">
+        <div class="member-name">${esc(m.Name)}</div>
+        <div class="member-role">${esc(m.Role || "Member")}</div>
+        <div class="progress-bar" style="margin-top:6px">
+          <div class="progress-fill" style="width:${memberStatMap[m.MemberID]||0}%"></div>
+        </div>
+      </div>
+      <div class="member-rate">${memberStatMap[m.MemberID]??0}%</div>
+    </div>
+  `).join("");
+}
+
+// ── Sessions list (sidebar) ────────────────────────────────────
+function renderSessionsList() {
+  const el = document.getElementById("sessionsList");
+  if (!sessions.length) {
+    el.innerHTML = `<div class="empty-state"><div class="hex-big">⬡</div><p>No sessions yet.</p></div>`;
+    return;
+  }
+  const sessionStatMap = {};
+  (stats.sessionStats || []).forEach(ss => sessionStatMap[ss.sessionId] = ss);
+
+  el.innerHTML = sessions.map(s => {
+    const ss = sessionStatMap[s.SessionID] || {};
+    const isSelected = selectedSession?.SessionID === s.SessionID;
+    return `
+      <div class="session-card ${isSelected ? "selected" : ""}" onclick="selectSession('${s.SessionID}')">
+        <div class="session-date">${formatDate(s.Date)}</div>
+        <div class="session-title">${esc(s.Title)}</div>
+        <div class="session-loc">📍 ${esc(s.Location||"")}</div>
+        <div class="session-chips">
+          <span class="chip chip-green">✓ ${ss.present||0} Present</span>
+          <span class="chip chip-red">✗ ${ss.absent||0} Absent</span>
+          ${ss.excused ? `<span class="chip chip-orange">~ ${ss.excused} Excused</span>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ── Sessions cards ─────────────────────────────────────────────
+function renderSessions() {
+  const el = document.getElementById("sessionCards");
+  if (!sessions.length) {
+    el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="hex-big">⬡</div><p>No sessions yet.</p></div>`;
+    return;
+  }
+  const sessionStatMap = {};
+  (stats.sessionStats || []).forEach(ss => sessionStatMap[ss.sessionId] = ss);
+
+  el.innerHTML = sessions.map(s => {
+    const ss = sessionStatMap[s.SessionID] || {};
+    return `
+      <div class="session-card">
+        <div class="session-date">${formatDate(s.Date)}</div>
+        <div class="session-title">${esc(s.Title)}</div>
+        <div class="session-loc">📍 ${esc(s.Location||"")} ${s.Notes ? "· " + esc(s.Notes) : ""}</div>
+        <div class="session-chips">
+          <span class="chip chip-green">✓ ${ss.present||0}</span>
+          <span class="chip chip-red">✗ ${ss.absent||0}</span>
+          <span class="chip chip-orange">~ ${ss.excused||0}</span>
+          <span class="chip chip-grey">${ss.rate||0}% rate</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ── Select session for attendance ──────────────────────────────
+async function selectSession(sessionId) {
+  selectedSession = sessions.find(s => s.SessionID === sessionId);
+  renderSessionsList(); // re-render to update selected state
+
+  const el = document.getElementById("attContent");
+  el.innerHTML = `<div style="text-align:center;padding:40px"><div class="spinner"></div></div>`;
+
+  const data = await api("getAttendance", { sessionId });
+  if (!data) return;
+
+  // Build lookup: memberId → status
+  const lookup = {};
+  (data.attendance || []).forEach(a => lookup[a.MemberID] = a.Status);
+
+  el.innerHTML = `
+    <div style="margin-bottom:18px; display:flex; align-items:center; justify-content:space-between">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700">${esc(selectedSession.Title)}</div>
+        <div style="font-size:12px;color:var(--hive-muted);margin-top:3px">${formatDate(selectedSession.Date)}</div>
+      </div>
+      <div class="saving-badge" id="savingBadge"><div class="spinner"></div> saving…</div>
+    </div>
+    <div style="border-bottom:1px solid var(--hive-border);padding-bottom:10px;margin-bottom:4px;display:flex;gap:20px;font-size:11px;color:var(--hive-muted);text-transform:uppercase;letter-spacing:1px">
+      <span>Member</span>
+      <span style="margin-left:auto">✓ Present</span>
+      <span>✗ Absent</span>
+      <span>~ Excused</span>
+    </div>
+    ${members.length ? members.map(m => `
+      <div class="att-member-row">
+        <div class="att-member-info">
+          <div class="att-avatar-sm">${initials(m.Name)}</div>
+          <div>
+            <div class="att-member-name">${esc(m.Name)}</div>
+            <div style="font-size:11px;color:var(--hive-muted)">${esc(m.Role||"Member")}</div>
+          </div>
+        </div>
+        <div class="status-btns">
+          <button class="status-btn ${lookup[m.MemberID]==="present"?"active-present":""}" onclick="markAtt('${m.MemberID}','present',this)" title="Present">✓</button>
+          <button class="status-btn ${lookup[m.MemberID]==="absent"?"active-absent":""}"  onclick="markAtt('${m.MemberID}','absent',this)"  title="Absent">✗</button>
+          <button class="status-btn ${lookup[m.MemberID]==="excused"?"active-excused":""}" onclick="markAtt('${m.MemberID}','excused',this)" title="Excused">~</button>
+        </div>
+      </div>
+    `).join("") : '<p style="color:var(--hive-muted);font-size:14px;padding:20px 0">Add members first.</p>'}
+  `;
+}
+
+// ── Mark attendance ────────────────────────────────────────────
+async function markAtt(memberId, status, btn) {
+  if (!selectedSession) return;
+
+  const row = btn.closest(".att-member-row");
+  row.querySelectorAll(".status-btn").forEach(b => {
+    b.classList.remove("active-present","active-absent","active-excused");
+  });
+  btn.classList.add("active-" + status);
+
+  document.getElementById("savingBadge")?.classList.add("show");
+
+  await api("markAttendance", {
+    sessionId: selectedSession.SessionID,
+    memberId, status
+  });
+
+  setTimeout(() => document.getElementById("savingBadge")?.classList.remove("show"), 1200);
+
+  // Refresh stats quietly
+  const st = await api("getStats");
+  if (st) { stats = st; renderStats(); renderSessionsList(); }
+}
+
+// ── Modals ─────────────────────────────────────────────────────
+function openAddMember()  { document.getElementById("memberModal").classList.add("open");  }
+function openAddSession() { document.getElementById("sessionModal").classList.add("open"); }
+function openConfig()     {
+  document.getElementById("configUrl").value = SCRIPT_URL;
+  document.getElementById("configModal").classList.add("open");
+}
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+// Close on overlay click
+document.querySelectorAll(".modal-overlay").forEach(o => {
+  o.addEventListener("click", e => { if (e.target === o) o.classList.remove("open"); });
+});
+
+async function submitMember() {
+  const name  = document.getElementById("mName").value.trim();
+  const phone = document.getElementById("mPhone").value.trim();
+  const role  = document.getElementById("mRole").value.trim();
+  if (!name) { showToast("Please enter a name", "error"); return; }
+
+  const data = await api("addMember", { name, phone, role });
+  if (data?.success) {
+    showToast("Member added to the Hive! 🐝");
+    closeModal("memberModal");
+    document.getElementById("mName").value = "";
+    document.getElementById("mPhone").value = "";
+    loadAll();
+  }
+}
+
+async function submitSession() {
+  const title    = document.getElementById("sTitle").value.trim();
+  const date     = document.getElementById("sDate").value;
+  const location = document.getElementById("sLocation").value.trim();
+  const notes    = document.getElementById("sNotes").value.trim();
+  if (!title || !date) { showToast("Please fill in title and date", "error"); return; }
+
+  const data = await api("addSession", { title, date, location, notes });
+  if (data?.success) {
+    showToast("Session created! ⬡");
+    closeModal("sessionModal");
+    loadAll();
+  }
+}
+
+// ── Config ─────────────────────────────────────────────────────
+function saveConfig() {
+  const url = document.getElementById("urlInput").value.trim();
+  if (!url) return;
+  SCRIPT_URL = url;
+  localStorage.setItem("hive_script_url", url);
+  document.getElementById("setupBanner").classList.add("hidden");
+  showToast("Connected! Loading data…");
+  loadAll();
+  // Auto-setup sheets
+  setTimeout(() => api("setup"), 1000);
+}
+
+function saveConfigFromModal() {
+  const url = document.getElementById("configUrl").value.trim();
+  if (!url) return;
+  SCRIPT_URL = url;
+  localStorage.setItem("hive_script_url", url);
+  document.getElementById("urlInput").value = url;
+  document.getElementById("setupBanner").classList.add("hidden");
+  closeModal("configModal");
+  showToast("URL saved! Loading data…");
+  loadAll();
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function initials(name) {
+  return (name || "?").split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
+}
+function esc(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function formatDate(d) {
+  if (!d) return "—";
+  try {
+    return new Date(d).toLocaleDateString("en-AE", { day:"numeric", month:"short", year:"numeric" });
+  } catch { return d; }
+}
+function showToast(msg, type = "success") {
+  const t = document.getElementById("toast");
+  t.textContent = (type === "success" ? "✓ " : "✗ ") + msg;
+  t.className = "toast " + type + " show";
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+</script>
+</body>
+</html>
