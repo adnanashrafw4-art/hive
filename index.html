@@ -16,6 +16,16 @@
 body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 20% 20%,rgba(245,197,24,.04) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(45,212,191,.03) 0%,transparent 50%);pointer-events:none;z-index:0;}
 
+
+/* Password layer */
+.password-overlay{position:fixed;inset:0;background:rgba(30,30,30,.98);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.password-overlay.hidden{display:none;}
+.password-card{width:100%;max-width:360px;background:var(--mid);border:1px solid var(--border);border-radius:18px;padding:30px;box-shadow:0 20px 70px rgba(0,0,0,.35);}
+.password-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:18px;}
+.password-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;text-align:center;margin-bottom:18px;}
+.password-error{color:var(--red);font-size:13px;text-align:center;margin-top:10px;min-height:18px;}
+body.locked main,body.locked header{filter:blur(4px);pointer-events:none;user-select:none;}
+
 /* Loading */
 .loading-overlay{position:fixed;inset:0;background:rgba(30,30,30,.96);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
 .loading-overlay.hidden{display:none;}
@@ -194,6 +204,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 </head>
 <body>
 
+<div class="password-overlay" id="passwordOverlay">
+  <div class="password-card">
+    <div class="password-logo"><div class="logo-hex">H</div><div class="logo-text">HIVE</div></div>
+    <div class="password-title">Enter HIVE Password</div>
+    <input class="form-input" id="hivePasswordInput" type="password" placeholder="Password" onkeydown="if(event.key==='Enter') unlockHive()"/>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px" onclick="unlockHive()">Unlock</button>
+    <div class="password-error" id="passwordError"></div>
+  </div>
+</div>
+
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-hex">🤲</div>
   <div class="loading-text">Loading charity data…</div>
@@ -225,7 +245,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 
   <!-- Global stats -->
   <div class="stats-row">
-    <div class="stat-card"><div class="stat-label">Months Tracked</div><div class="stat-val" id="gMonths">—</div><div class="stat-desc">with charity data</div></div>
+    <div class="stat-card"><div class="stat-label">Initiatives Supported</div><div class="stat-val" id="gMonths">—</div><div class="stat-desc">unique causes</div></div>
     <div class="stat-card"><div class="stat-label">Total Raised</div><div class="stat-val" style="color:var(--green)" id="gRaised">—</div><div class="stat-desc">AED collected</div></div>
     <div class="stat-card"><div class="stat-label">Total Donated</div><div class="stat-val" style="color:var(--orange)" id="gDonated">—</div><div class="stat-desc">to causes</div></div>
     <div class="stat-card"><div class="stat-label">Total Balance</div><div class="stat-val" style="color:var(--teal)" id="gBalance">—</div><div class="stat-desc">remaining</div></div>
@@ -236,7 +256,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
     <div class="charity-split">
       <div>
         <div class="section-head">
-          <div class="section-title">Monthly View</div>
+          <div class="section-title">Initiatives by Month</div>
           <button class="btn btn-primary btn-sm" onclick="openMonthModal()">+ Add Month</button>
         </div>
         <div class="month-list" id="monthList">
@@ -296,6 +316,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
       </div>
     </div>
     <div class="form-field">
+      <label class="form-label">Balance Amount (AED)</label>
+      <input class="form-input" id="mBalanceAED" type="number" placeholder="Leave blank to auto-calculate from received minus donations"/>
+    </div>
+    <div class="form-field">
       <label class="form-label">Initiative (optional)</label>
       <input class="form-input" id="mInitiative" placeholder="e.g. Ramadan 2026, Flood Relief…"/>
     </div>
@@ -326,7 +350,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcVAbTkxcY_rhkk-VJ27laXDKatgZAnQFlbEwlxJxsQwMdv-aI2PfeMuft6tSfGQ6J6w/exec";
+const HIVE_PASSWORD = "hive123";
 const MONTH_NAMES = ["","January","February","March","April","May","June","July","August","September","October","November","December"];
+const CURRENCY_RATES = { AED:1, INR:0.044, USD:3.67, GBP:4.63 };
 
 let months        = [];
 let donations     = [];
@@ -335,15 +361,31 @@ let confirmFn     = null;
 let currentMode   = "admin";
 
 document.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add("locked");
   document.getElementById("mYear").value = new Date().getFullYear();
   document.getElementById("mMonth").value = new Date().getMonth() + 1;
-  loadCharity();
+  if (sessionStorage.getItem("hiveUnlocked") === "yes") unlockHive(true);
 });
+
+function unlockHive(skipCheck=false) {
+  const input = document.getElementById("hivePasswordInput");
+  const pass  = skipCheck ? HIVE_PASSWORD : (input?.value || "");
+  if (pass !== HIVE_PASSWORD) {
+    document.getElementById("passwordError").textContent = "Incorrect password";
+    if (input) input.value = "";
+    return;
+  }
+  sessionStorage.setItem("hiveUnlocked", "yes");
+  document.body.classList.remove("locked");
+  document.getElementById("passwordOverlay").classList.add("hidden");
+  loadCharity();
+}
 
 async function api(action, body={}) {
   try {
     const url = new URL(SCRIPT_URL);
     url.searchParams.set("action", action);
+    url.searchParams.set("password", HIVE_PASSWORD);
     Object.entries(body).forEach(([k,v]) => url.searchParams.set(k, String(v)));
     const res  = await fetch(url.toString());
     const data = await res.json();
@@ -379,10 +421,12 @@ function renderAll() {
 
 // ── Global stats ───────────────────────────────────────────────
 function renderGlobalStats() {
-  const totalRaised  = months.reduce((a,m) => a + toAED(Number(m.TotalReceived)||0, m.Currency), 0);
+  const totalRaised  = months.reduce((a,m) => a + getMonthReceivedAED(m), 0);
   const totalDonated = donations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
-  const balance      = totalRaised - totalDonated;
-  document.getElementById("gMonths").textContent  = months.length;
+  const balance      = months.reduce((a,m) => a + getMonthBalanceAED(m), 0);
+  const supported    = new Set(donations.map(d => String(d.Cause||"").trim()).filter(Boolean));
+  if (!supported.size) months.forEach(m => { if (String(m.Initiative||"").trim()) supported.add(String(m.Initiative).trim()); });
+  document.getElementById("gMonths").textContent  = supported.size;
   document.getElementById("gRaised").textContent  = "AED " + fmt(totalRaised);
   document.getElementById("gDonated").textContent = "AED " + fmt(totalDonated);
   document.getElementById("gBalance").textContent = "AED " + fmt(balance);
@@ -395,8 +439,8 @@ function renderMonthList() {
   el.innerHTML = months.map(m => {
     const mDonations = donations.filter(d => d.MonthID === m.MonthID);
     const donated    = mDonations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
-    const received   = toAED(Number(m.TotalReceived)||0, m.Currency);
-    const balance    = received - donated;
+    const received   = getMonthReceivedAED(m);
+    const balance    = getMonthBalanceAED(m);
     const pct        = received > 0 ? Math.min(100, Math.round((donated/received)*100)) : 0;
     const sel        = selectedMonth?.MonthID === m.MonthID;
     return `
@@ -425,8 +469,8 @@ function renderMonthDetail(monthId) {
   const m          = months.find(m => m.MonthID === monthId);
   const mDonations = donations.filter(d => d.MonthID === monthId);
   const donated    = mDonations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
-  const received   = toAED(Number(m.TotalReceived)||0, m.Currency);
-  const balance    = received - donated;
+  const received   = getMonthReceivedAED(m);
+  const balance    = getMonthBalanceAED(m);
 
   document.getElementById("rightPanel").innerHTML = `
     <div class="detail-header">
@@ -506,8 +550,8 @@ function renderMemberView() {
   el.innerHTML = months.map(m => {
     const mDonations = donations.filter(d => d.MonthID === m.MonthID);
     const donated    = mDonations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
-    const received   = toAED(Number(m.TotalReceived)||0, m.Currency);
-    const balance    = received - donated;
+    const received   = getMonthReceivedAED(m);
+    const balance    = getMonthBalanceAED(m);
 
     return `
       <div class="member-month-card">
@@ -572,6 +616,7 @@ function openMonthModal() {
   document.getElementById("mYear").value  = new Date().getFullYear();
   document.getElementById("mReceived").value   = "";
   document.getElementById("mCurrency").value   = "AED";
+  document.getElementById("mBalanceAED").value = "";
   document.getElementById("mInitiative").value = "";
   document.getElementById("mNotes").value      = "";
   document.getElementById("monthModal").classList.add("open");
@@ -586,6 +631,7 @@ function openEditMonth(monthId) {
   document.getElementById("mYear").value          = m.Year;
   document.getElementById("mReceived").value      = m.TotalReceived || "";
   document.getElementById("mCurrency").value      = m.Currency || "AED";
+  document.getElementById("mBalanceAED").value    = m.BalanceAED !== undefined && m.BalanceAED !== "" ? Number(m.BalanceAED) : getMonthBalanceAED(m);
   document.getElementById("mInitiative").value    = m.Initiative || "";
   document.getElementById("mNotes").value         = m.Notes || "";
   document.getElementById("monthModal").classList.add("open");
@@ -597,18 +643,19 @@ async function submitMonth() {
   const year       = document.getElementById("mYear").value;
   const received   = document.getElementById("mReceived").value;
   const currency   = document.getElementById("mCurrency").value;
+  const balanceAED = document.getElementById("mBalanceAED").value;
   const initiative = document.getElementById("mInitiative").value.trim();
   const notes      = document.getElementById("mNotes").value.trim();
   if (!month||!year) { showToast("Please select a month and year","error"); return; }
 
-  const data = await apiWrite("saveMonth",{ monthId:mid, month, year, totalReceived:received, currency, initiative, notes });
+  const data = await apiWrite("saveMonth",{ monthId:mid, month, year, totalReceived:received, currency, balanceAED, initiative, notes });
   if (data?.success) {
     closeModal("monthModal");
     if (mid) {
       const idx = months.findIndex(m => m.MonthID === mid);
-      if (idx > -1) months[idx] = { ...months[idx], Month:Number(month), Year:Number(year), TotalReceived:Number(received), Currency:currency, Initiative:initiative, Notes:notes };
+      if (idx > -1) months[idx] = { ...months[idx], Month:Number(month), Year:Number(year), TotalReceived:Number(data.totalReceived ?? received), Currency:currency, BalanceAED:Number(data.balanceAED ?? balanceAED), Initiative:initiative, Notes:notes };
     } else {
-      months.unshift({ MonthID:data.monthId, Month:Number(month), Year:Number(year), TotalReceived:Number(received), Currency:currency, Initiative:initiative, Notes:notes });
+      months.unshift({ MonthID:data.monthId, Month:Number(month), Year:Number(year), TotalReceived:Number(data.totalReceived ?? received), Currency:currency, BalanceAED:Number(data.balanceAED ?? balanceAED), Initiative:initiative, Notes:notes });
     }
     // Re-sort
     months.sort((a,b) => { if(a.Year!==b.Year) return Number(b.Year)-Number(a.Year); return Number(b.Month)-Number(a.Month); });
@@ -691,8 +738,22 @@ function causeIcon(cause) {
 }
 
 function toAED(amount, currency) {
-  const rates={AED:1,INR:0.044,USD:3.67,GBP:4.63};
-  return amount*(rates[currency]||1);
+  return amount * (CURRENCY_RATES[currency] || 1);
+}
+function fromAED(amountAED, currency) {
+  return amountAED / (CURRENCY_RATES[currency] || 1);
+}
+function getMonthDonatedAED(monthId) {
+  return donations.filter(d => d.MonthID === monthId).reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
+}
+function getMonthBalanceAED(m) {
+  if (m && m.BalanceAED !== undefined && m.BalanceAED !== "" && !isNaN(Number(m.BalanceAED))) return Number(m.BalanceAED);
+  return getMonthReceivedAED(m) - getMonthDonatedAED(m?.MonthID);
+}
+function getMonthReceivedAED(m) {
+  const donated = getMonthDonatedAED(m?.MonthID);
+  if (m && m.BalanceAED !== undefined && m.BalanceAED !== "" && !isNaN(Number(m.BalanceAED))) return donated + Number(m.BalanceAED);
+  return toAED(Number(m?.TotalReceived)||0, m?.Currency);
 }
 function fmt(n) { return Number(n||0).toLocaleString("en-AE",{minimumFractionDigits:0,maximumFractionDigits:0}); }
 function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
