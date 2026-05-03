@@ -422,7 +422,7 @@ function renderAll() {
 // ── Global stats ───────────────────────────────────────────────
 function renderGlobalStats() {
   const totalRaised  = months.reduce((a,m) => a + getMonthReceivedAED(m), 0);
-  const totalDonated = donations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
+  const totalDonated = months.reduce((a,m) => a + getMonthDonatedAdjustedAED(m), 0);
   const balance      = months.reduce((a,m) => a + getMonthBalanceAED(m), 0);
   const supported    = new Set(donations.map(d => String(d.Cause||"").trim()).filter(Boolean));
   if (!supported.size) months.forEach(m => { if (String(m.Initiative||"").trim()) supported.add(String(m.Initiative).trim()); });
@@ -438,9 +438,9 @@ function renderMonthList() {
   if (!months.length) { el.innerHTML=`<div class="empty-state"><div class="hex-big">🤲</div><p>No months yet.<br>Click "+ Add Month" to start.</p></div>`; return; }
   el.innerHTML = months.map(m => {
     const mDonations = donations.filter(d => d.MonthID === m.MonthID);
-    const donated    = mDonations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
     const received   = getMonthReceivedAED(m);
     const balance    = getMonthBalanceAED(m);
+    const donated    = getMonthDonatedAdjustedAED(m);
     const pct        = received > 0 ? Math.min(100, Math.round((donated/received)*100)) : 0;
     const sel        = selectedMonth?.MonthID === m.MonthID;
     return `
@@ -468,9 +468,9 @@ function selectMonth(monthId) {
 function renderMonthDetail(monthId) {
   const m          = months.find(m => m.MonthID === monthId);
   const mDonations = donations.filter(d => d.MonthID === monthId);
-  const donated    = mDonations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
   const received   = getMonthReceivedAED(m);
   const balance    = getMonthBalanceAED(m);
+  const donated    = getMonthDonatedAdjustedAED(m);
 
   document.getElementById("rightPanel").innerHTML = `
     <div class="detail-header">
@@ -549,9 +549,9 @@ function renderMemberView() {
 
   el.innerHTML = months.map(m => {
     const mDonations = donations.filter(d => d.MonthID === m.MonthID);
-    const donated    = mDonations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
     const received   = getMonthReceivedAED(m);
     const balance    = getMonthBalanceAED(m);
+    const donated    = getMonthDonatedAdjustedAED(m);
 
     return `
       <div class="member-month-card">
@@ -570,7 +570,7 @@ function renderMemberView() {
         ${mDonations.length ? `
           <div class="causes-section-title">🤲 Where It Went</div>
           ${mDonations.map(d => {
-            const aedAmt = toAED(Number(d.Amount)||0, d.Currency);
+            const aedAmt = getDonationAdjustedAED(d, m);
             const pct    = donated > 0 ? Math.round((aedAmt/donated)*100) : 0;
             return `
             <div class="cause-row">
@@ -743,17 +743,29 @@ function toAED(amount, currency) {
 function fromAED(amountAED, currency) {
   return amountAED / (CURRENCY_RATES[currency] || 1);
 }
-function getMonthDonatedAED(monthId) {
+function getMonthRawDonatedAED(monthId) {
   return donations.filter(d => d.MonthID === monthId).reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
 }
-function getMonthBalanceAED(m) {
-  if (m && m.BalanceAED !== undefined && m.BalanceAED !== "" && !isNaN(Number(m.BalanceAED))) return Number(m.BalanceAED);
-  return getMonthReceivedAED(m) - getMonthDonatedAED(m?.MonthID);
-}
 function getMonthReceivedAED(m) {
-  const donated = getMonthDonatedAED(m?.MonthID);
-  if (m && m.BalanceAED !== undefined && m.BalanceAED !== "" && !isNaN(Number(m.BalanceAED))) return donated + Number(m.BalanceAED);
   return toAED(Number(m?.TotalReceived)||0, m?.Currency);
+}
+function hasManualBalance(m) {
+  return m && m.BalanceAED !== undefined && m.BalanceAED !== "" && !isNaN(Number(m.BalanceAED));
+}
+function getMonthBalanceAED(m) {
+  if (hasManualBalance(m)) return Number(m.BalanceAED);
+  return getMonthReceivedAED(m) - getMonthRawDonatedAED(m?.MonthID);
+}
+function getMonthDonatedAdjustedAED(m) {
+  const received = getMonthReceivedAED(m);
+  if (hasManualBalance(m)) return Math.max(0, received - Number(m.BalanceAED));
+  return getMonthRawDonatedAED(m?.MonthID);
+}
+function getDonationAdjustedAED(d, m) {
+  const rawDonation = toAED(Number(d.Amount)||0, d.Currency);
+  const rawMonth = getMonthRawDonatedAED(m?.MonthID);
+  if (!hasManualBalance(m) || rawMonth <= 0) return rawDonation;
+  return rawDonation * (getMonthDonatedAdjustedAED(m) / rawMonth);
 }
 function fmt(n) { return Number(n||0).toLocaleString("en-AE",{minimumFractionDigits:0,maximumFractionDigits:0}); }
 function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
