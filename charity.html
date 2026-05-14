@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HIVE · Charity</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --y:#F5C518;--dark:#1E1E1E;--mid:#2C2C2C;--card:#262626;
+  --border:#363636;--text:#E8E8E8;--muted:#888;
+  --green:#4CAF85;--red:#E05C5C;--orange:#F0A050;--blue:#5B9CF6;--teal:#2DD4BF;
+  --r:14px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 20% 20%,rgba(245,197,24,.04) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(45,212,191,.03) 0%,transparent 50%);pointer-events:none;z-index:0;}
+
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:rgba(30,30,30,.96);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loading-overlay.hidden{display:none;}
+.loading-hex{width:56px;height:56px;background:var(--y);clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);display:flex;align-items:center;justify-content:center;font-size:24px;animation:pulse 1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.loading-text{font-size:14px;color:var(--muted);}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:rgba(30,30,30,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-hex{width:36px;height:36px;background:var(--y);clip-path:polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:var(--dark);animation:pulse 3s ease-in-out infinite;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:2px;color:var(--y);}
+.logo-sub{font-size:11px;color:var(--muted);margin-left:6px;margin-top:2px;letter-spacing:1px;text-transform:uppercase;}
+.nav-links{display:flex;gap:8px;}
+.nav-link{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;text-decoration:none;transition:all .2s;}
+.nav-link:hover{border-color:var(--y);color:var(--y);}
+.nav-link.active{background:var(--y);color:var(--dark);border-color:var(--y);font-weight:700;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.saving-dot{width:8px;height:8px;border-radius:50%;background:var(--y);opacity:0;}
+.saving-dot.show{opacity:1;animation:blink 1s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.icon-btn{background:transparent;border:1px solid var(--border);color:var(--muted);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.icon-btn:hover{border-color:var(--y);color:var(--y);}
+.icon-btn.spinning{animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Main */
+.main{max-width:1100px;margin:0 auto;padding:32px 24px;position:relative;z-index:1;}
+
+/* Mode toggle */
+.mode-toggle{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:28px;width:fit-content;}
+.mode-btn{padding:9px 20px;border-radius:9px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;}
+.mode-btn:hover{color:var(--text);}
+.mode-btn.active{background:var(--y);color:var(--dark);font-weight:700;}
+
+/* Global stats */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;}
+.stat-card:hover{transform:translateY(-2px);border-color:rgba(245,197,24,.3);}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--y);transform:scaleX(0);transition:transform .3s;}
+.stat-card:hover::after{transform:scaleX(1);}
+.stat-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--y);line-height:1.1;margin:6px 0 2px;}
+.stat-desc{font-size:12px;color:var(--muted);}
+
+/* Split layout */
+.charity-split{display:grid;grid-template-columns:300px 1fr;gap:24px;}
+@media(max-width:900px){.charity-split{grid-template-columns:1fr;}}
+
+/* Month list */
+.month-list{display:flex;flex-direction:column;gap:10px;}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.section-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;}
+
+.month-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;cursor:pointer;transition:all .2s;position:relative;}
+.month-card:hover{border-color:rgba(245,197,24,.3);transform:translateY(-1px);}
+.month-card.selected{border-color:var(--y);background:rgba(245,197,24,.06);}
+.month-label{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:3px;}
+.month-initiative{font-size:12px;color:var(--teal);margin-bottom:10px;font-style:italic;}
+.month-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:8px;}
+.month-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--green));border-radius:3px;transition:width .6s ease;}
+.month-nums{display:flex;justify-content:space-between;font-size:12px;}
+.month-received{color:var(--green);font-weight:600;}
+.month-spent{color:var(--orange);font-weight:600;}
+.month-balance{color:var(--teal);font-weight:600;}
+.month-delete-btn{position:absolute;top:10px;right:10px;background:rgba(224,92,92,0);border:none;color:transparent;width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.month-card:hover .month-delete-btn{background:rgba(224,92,92,.15);color:var(--red);}
+.month-delete-btn:hover{background:rgba(224,92,92,.3) !important;}
+
+/* Right panel */
+.right-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;}
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--muted);gap:12px;}
+.placeholder .hex{font-size:44px;opacity:.2;}
+
+/* Detail header */
+.detail-header{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.detail-month-name{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;}
+.detail-initiative{font-size:14px;color:var(--teal);font-style:italic;margin-top:4px;}
+.detail-notes{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6;}
+.detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;}
+.detail-stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center;}
+.detail-stat-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;}
+.detail-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+/* Donations */
+.donations-section{margin-top:4px;}
+.donations-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.donations-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+.donation-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.donation-row:last-child{border-bottom:none;}
+.donation-icon{width:36px;height:36px;border-radius:10px;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.donation-info{flex:1;min-width:0;}
+.donation-cause{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.donation-meta{font-size:12px;color:var(--muted);margin-top:2px;}
+.donation-amount{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--orange);white-space:nowrap;}
+.donation-del-btn{background:rgba(224,92,92,0);border:none;color:transparent;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.donation-row:hover .donation-del-btn{background:rgba(224,92,92,.15);color:var(--red);}
+
+/* Add donation form */
+.add-form{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:16px;}
+.add-form-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.form-row:last-child{margin-bottom:0;}
+.form-row input,.form-row select{flex:1;min-width:110px;background:var(--dark);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.form-row input:focus,.form-row select:focus{border-color:var(--teal);}
+.form-row select option{background:var(--mid);}
+
+/* Member view cards */
+.member-month-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:20px;}
+.mm-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.mm-month{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
+.mm-initiative{font-size:13px;color:var(--teal);font-style:italic;margin-top:3px;}
+.mm-notes{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5;}
+.mm-right{text-align:right;}
+.mm-received-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--green);}
+.mm-received-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+.causes-section-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+.cause-row{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.cause-icon{width:40px;height:40px;border-radius:10px;background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.cause-info{flex:1;}
+.cause-name{font-weight:600;font-size:14px;}
+.cause-notes{font-size:12px;color:var(--muted);margin-top:1px;}
+.cause-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:5px;}
+.cause-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--green));border-radius:3px;}
+.cause-amount{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--orange);white-space:nowrap;text-align:right;}
+.cause-amount-sub{font-size:11px;color:var(--muted);text-align:right;}
+
+.balance-banner{background:linear-gradient(135deg,rgba(45,212,191,.12),rgba(45,212,191,.04));border:1px solid rgba(45,212,191,.25);border-radius:10px;padding:16px 20px;margin-top:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.balance-left{}
+.balance-label{font-size:13px;color:var(--teal);font-weight:700;}
+.balance-note{font-size:12px;color:var(--muted);font-style:italic;margin-top:3px;}
+.balance-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--teal);}
+
+/* Buttons */
+.btn{padding:10px 20px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:7px;}
+.btn-primary{background:var(--y);color:var(--dark);}
+.btn-primary:hover{background:#e0b300;transform:translateY(-1px);}
+.btn-teal{background:rgba(45,212,191,.15);border:1px solid rgba(45,212,191,.3);color:var(--teal);}
+.btn-teal:hover{background:rgba(45,212,191,.28);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--y);color:var(--y);}
+.btn-danger{background:rgba(224,92,92,.15);border:1px solid rgba(224,92,92,.3);color:var(--red);}
+.btn-danger:hover{background:rgba(224,92,92,.3);}
+.btn-sm{padding:7px 14px;font-size:12px;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;animation:fadein .2s ease;}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.modal{background:var(--mid);border:1px solid var(--border);border-radius:18px;padding:32px;width:90%;max-width:460px;animation:slideup .25s ease;}
+@keyframes slideup{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:22px;}
+.form-field{margin-bottom:16px;}
+.form-label{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;}
+.form-input{width:100%;background:var(--dark);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--y);}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;}
+.confirm-modal{background:var(--mid);border:1px solid rgba(224,92,92,.4);border-radius:18px;padding:32px;width:90%;max-width:400px;animation:slideup .25s ease;}
+
+/* Toast */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--mid);border:1px solid var(--border);padding:12px 20px;border-radius:10px;font-size:14px;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:999;max-width:320px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--green);}
+.toast.error{border-color:var(--red);}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-state .hex-big{font-size:48px;margin-bottom:12px;opacity:.2;}
+.empty-state p{font-size:14px;}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+
+/* Month name helper */
+.MONTHS_MAP{display:none;}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-hex">🤲</div>
+  <div class="loading-text">Loading charity data…</div>
+</div>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-hex">H</div>
+    <div><div class="logo-text">HIVE</div></div>
+    <div class="logo-sub">Charity</div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Attendance</a>
+    <a class="nav-link active" href="charity.html">Charity</a>
+    <a class="nav-link" href="member.html">Members</a>
+  </div>
+  <div class="header-right">
+    <div class="saving-dot" id="savingDot"></div>
+    <button class="icon-btn" onclick="refreshData(this)" title="Refresh">↻</button>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="modeAdmin"  onclick="setMode('admin')">⚙ Admin</button>
+    <button class="mode-btn"        id="modeMember" onclick="setMode('member')">👥 Member View</button>
+  </div>
+
+  <!-- Global stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Months Tracked</div><div class="stat-val" id="gMonths">—</div><div class="stat-desc">with charity data</div></div>
+    <div class="stat-card"><div class="stat-label">Total Raised</div><div class="stat-val" style="color:var(--green)" id="gRaised">—</div><div class="stat-desc">AED collected</div></div>
+    <div class="stat-card"><div class="stat-label">Total Donated</div><div class="stat-val" style="color:var(--orange)" id="gDonated">—</div><div class="stat-desc">to causes</div></div>
+    <div class="stat-card"><div class="stat-label">Total Balance</div><div class="stat-val" style="color:var(--teal)" id="gBalance">—</div><div class="stat-desc">remaining</div></div>
+  </div>
+
+  <!-- Admin view -->
+  <div id="adminView">
+    <div class="charity-split">
+      <div>
+        <div class="section-head">
+          <div class="section-title">Monthly View</div>
+          <button class="btn btn-primary btn-sm" onclick="openMonthModal()">+ Add Month</button>
+        </div>
+        <div class="month-list" id="monthList">
+          <div class="empty-state"><div class="hex-big">🤲</div><p>No months yet.<br>Add your first one!</p></div>
+        </div>
+      </div>
+      <div class="right-panel" id="rightPanel">
+        <div class="placeholder"><div class="hex">🤲</div><p>Select a month to manage</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member view -->
+  <div id="memberView" style="display:none">
+    <div id="memberMonths">
+      <div class="empty-state"><div class="hex-big">🤲</div><p>No data yet.</p></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Add/Edit Month Modal -->
+<div class="modal-overlay" id="monthModal">
+  <div class="modal">
+    <div class="modal-title" id="monthModalTitle">Add Month</div>
+    <input type="hidden" id="editMonthId"/>
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="form-label">Month</label>
+        <select class="form-input" id="mMonth">
+          <option value="1">January</option><option value="2">February</option>
+          <option value="3">March</option><option value="4">April</option>
+          <option value="5">May</option><option value="6">June</option>
+          <option value="7">July</option><option value="8">August</option>
+          <option value="9">September</option><option value="10">October</option>
+          <option value="11">November</option><option value="12">December</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Year</label>
+        <input class="form-input" id="mYear" type="number" placeholder="2026"/>
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="form-label">Total Received</label>
+        <input class="form-input" id="mReceived" type="number" placeholder="3890"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Currency</label>
+        <select class="form-input" id="mCurrency">
+          <option value="AED">AED</option>
+          <option value="INR">INR</option>
+          <option value="USD">USD</option>
+          <option value="GBP">GBP</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Initiative (optional)</label>
+      <input class="form-input" id="mInitiative" placeholder="e.g. Ramadan 2026, Flood Relief…"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes / Comments</label>
+      <input class="form-input" id="mNotes" placeholder="Any context or notes for this month…"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('monthModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitMonth()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="confirm-modal">
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:10px" id="confirmTitle">Delete?</div>
+    <div style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px" id="confirmMsg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="runConfirm()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcVAbTkxcY_rhkk-VJ27laXDKatgZAnQFlbEwlxJxsQwMdv-aI2PfeMuft6tSfGQ6J6w/exec";
+const MONTH_NAMES = ["","January","February","March","April","May","June","July","August","September","October","November","December"];
+
+let months        = [];
+let donations     = [];
+let selectedMonth = null;
+let confirmFn     = null;
+let currentMode   = "admin";
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("mYear").value = new Date().getFullYear();
+  document.getElementById("mMonth").value = new Date().getMonth() + 1;
+  loadCharity();
+});
+
+async function api(action, body={}) {
+  try {
+    const url = new URL(SCRIPT_URL);
+    url.searchParams.set("action", action);
+    Object.entries(body).forEach(([k,v]) => url.searchParams.set(k, String(v)));
+    const res  = await fetch(url.toString());
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  } catch(e) { showToast("Error: " + e.message,"error"); return null; }
+}
+function apiWrite(action, body={}) {
+  showSaving(true);
+  return api(action, body).then(r => { showSaving(false); return r; });
+}
+function showSaving(on) { document.getElementById("savingDot").classList.toggle("show", on); }
+
+async function loadCharity() {
+  document.getElementById("loadingOverlay").classList.remove("hidden");
+  const data = await api("loadCharity");
+  document.getElementById("loadingOverlay").classList.add("hidden");
+  if (!data) return;
+  months    = data.months    || [];
+  donations = data.donations || [];
+  renderAll();
+}
+
+function renderAll() {
+  renderGlobalStats();
+  renderMonthList();
+  if (currentMode === "member") renderMemberView();
+  if (selectedMonth) {
+    selectedMonth = months.find(m => m.MonthID === selectedMonth.MonthID) || null;
+    if (selectedMonth) renderMonthDetail(selectedMonth.MonthID);
+  }
+}
+
+// ── Global stats ───────────────────────────────────────────────
+function renderGlobalStats() {
+  const totalRaised  = months.reduce((a,m) => a + toAED(Number(m.TotalReceived)||0, m.Currency), 0);
+  const totalDonated = donations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
+  const balance      = totalRaised - totalDonated;
+  document.getElementById("gMonths").textContent  = months.length;
+  document.getElementById("gRaised").textContent  = "AED " + fmt(totalRaised);
+  document.getElementById("gDonated").textContent = "AED " + fmt(totalDonated);
+  document.getElementById("gBalance").textContent = "AED " + fmt(balance);
+}
+
+// ── Month list ─────────────────────────────────────────────────
+function renderMonthList() {
+  const el = document.getElementById("monthList");
+  if (!months.length) { el.innerHTML=`<div class="empty-state"><div class="hex-big">🤲</div><p>No months yet.<br>Click "+ Add Month" to start.</p></div>`; return; }
+  el.innerHTML = months.map(m => {
+    const mDonations = donations.filter(d => d.MonthID === m.MonthID);
+    const donated    = mDonations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
+    const received   = toAED(Number(m.TotalReceived)||0, m.Currency);
+    const balance    = received - donated;
+    const pct        = received > 0 ? Math.min(100, Math.round((donated/received)*100)) : 0;
+    const sel        = selectedMonth?.MonthID === m.MonthID;
+    return `
+      <div class="month-card ${sel?"selected":""}" onclick="selectMonth('${m.MonthID}')">
+        <button class="month-delete-btn" onclick="event.stopPropagation();promptDeleteMonth('${m.MonthID}','${MONTH_NAMES[Number(m.Month)]} ${m.Year}')" title="Delete">🗑</button>
+        <div class="month-label">${MONTH_NAMES[Number(m.Month)]} ${m.Year}</div>
+        ${m.Initiative?`<div class="month-initiative">✦ ${esc(m.Initiative)}</div>`:""}
+        <div class="month-bar"><div class="month-bar-fill" style="width:${pct}%"></div></div>
+        <div class="month-nums">
+          <span class="month-received">↑ ${m.Currency||"AED"} ${fmt(Number(m.TotalReceived))}</span>
+          <span class="month-spent">↓ AED ${fmt(donated)}</span>
+          <span class="month-balance">= AED ${fmt(balance)}</span>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ── Select month ───────────────────────────────────────────────
+function selectMonth(monthId) {
+  selectedMonth = months.find(m => m.MonthID === monthId);
+  renderMonthList();
+  renderMonthDetail(monthId);
+}
+
+function renderMonthDetail(monthId) {
+  const m          = months.find(m => m.MonthID === monthId);
+  const mDonations = donations.filter(d => d.MonthID === monthId);
+  const donated    = mDonations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
+  const received   = toAED(Number(m.TotalReceived)||0, m.Currency);
+  const balance    = received - donated;
+
+  document.getElementById("rightPanel").innerHTML = `
+    <div class="detail-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div>
+          <div class="detail-month-name">${MONTH_NAMES[Number(m.Month)]} ${m.Year}</div>
+          ${m.Initiative?`<div class="detail-initiative">✦ ${esc(m.Initiative)}</div>`:""}
+          ${m.Notes?`<div class="detail-notes">${esc(m.Notes)}</div>`:""}
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="openEditMonth('${monthId}')">✏ Edit</button>
+      </div>
+      <div class="detail-stats">
+        <div class="detail-stat">
+          <div class="detail-stat-val" style="color:var(--green)">${m.Currency||"AED"} ${fmt(Number(m.TotalReceived))}</div>
+          <div class="detail-stat-label">Received</div>
+        </div>
+        <div class="detail-stat">
+          <div class="detail-stat-val" style="color:var(--orange)">AED ${fmt(donated)}</div>
+          <div class="detail-stat-label">Donated</div>
+        </div>
+        <div class="detail-stat">
+          <div class="detail-stat-val" style="color:var(--teal)">AED ${fmt(balance)}</div>
+          <div class="detail-stat-label">Balance</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="donations-section">
+      <div class="donations-header">
+        <div class="donations-title">Donations to Causes (${mDonations.length})</div>
+      </div>
+      <div id="donationsList">
+        ${mDonations.length ? mDonations.map(d => `
+          <div class="donation-row">
+            <div class="donation-icon">${causeIcon(d.Cause)}</div>
+            <div class="donation-info">
+              <div class="donation-cause">${esc(d.Cause)}</div>
+              <div class="donation-meta">${d.Date?formatDate(d.Date):""}${d.Notes?" · "+esc(d.Notes):""}</div>
+            </div>
+            <div class="donation-amount">${d.Currency||"AED"} ${fmt(Number(d.Amount))}</div>
+            <button class="donation-del-btn" onclick="promptDeleteDonation('${d.DonationID}','${esc(d.Cause)}')">🗑</button>
+          </div>`).join("") : `<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">No donations logged yet.</div>`}
+      </div>
+
+      <hr class="divider"/>
+
+      <div class="add-form">
+        <div class="add-form-title">+ Log a Donation</div>
+        <div class="form-row">
+          <input id="dCause"  placeholder="Cause / Initiative name *" style="flex:2"/>
+          <input id="dAmount" placeholder="Amount *" type="number" style="max-width:120px"/>
+          <select id="dCurrency" style="max-width:85px">
+            <option value="AED">AED</option>
+            <option value="INR">INR</option>
+            <option value="USD">USD</option>
+            <option value="GBP">GBP</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <input id="dDate"  type="date" style="max-width:160px"/>
+          <input id="dNotes" placeholder="Notes (optional)"/>
+          <button class="btn btn-teal btn-sm" onclick="submitDonation('${monthId}')">Log</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const dateEl = document.getElementById("dDate");
+  if (dateEl) dateEl.value = new Date().toISOString().split("T")[0];
+}
+
+// ── Member view ────────────────────────────────────────────────
+function renderMemberView() {
+  const el = document.getElementById("memberMonths");
+  if (!months.length) { el.innerHTML=`<div class="empty-state"><div class="hex-big">🤲</div><p>No data yet.</p></div>`; return; }
+
+  el.innerHTML = months.map(m => {
+    const mDonations = donations.filter(d => d.MonthID === m.MonthID);
+    const donated    = mDonations.reduce((a,d) => a + toAED(Number(d.Amount)||0, d.Currency), 0);
+    const received   = toAED(Number(m.TotalReceived)||0, m.Currency);
+    const balance    = received - donated;
+
+    return `
+      <div class="member-month-card">
+        <div class="mm-header">
+          <div>
+            <div class="mm-month">${MONTH_NAMES[Number(m.Month)]} ${m.Year}</div>
+            ${m.Initiative?`<div class="mm-initiative">✦ ${esc(m.Initiative)}</div>`:""}
+            ${m.Notes?`<div class="mm-notes">${esc(m.Notes)}</div>`:""}
+          </div>
+          <div class="mm-right">
+            <div class="mm-received-val">${m.Currency||"AED"} ${fmt(Number(m.TotalReceived))}</div>
+            <div class="mm-received-label">Total Received</div>
+          </div>
+        </div>
+
+        ${mDonations.length ? `
+          <div class="causes-section-title">🤲 Where It Went</div>
+          ${mDonations.map(d => {
+            const aedAmt = toAED(Number(d.Amount)||0, d.Currency);
+            const pct    = donated > 0 ? Math.round((aedAmt/donated)*100) : 0;
+            return `
+            <div class="cause-row">
+              <div class="cause-icon">${causeIcon(d.Cause)}</div>
+              <div class="cause-info">
+                <div class="cause-name">${esc(d.Cause)}</div>
+                ${d.Notes?`<div class="cause-notes">${esc(d.Notes)}</div>`:""}
+                <div class="cause-bar"><div class="cause-bar-fill" style="width:${pct}%"></div></div>
+              </div>
+              <div>
+                <div class="cause-amount">${d.Currency||"AED"} ${fmt(Number(d.Amount))}</div>
+                ${d.Currency!=="AED"?`<div class="cause-amount-sub">≈ AED ${fmt(aedAmt)}</div>`:""}
+              </div>
+            </div>`;
+          }).join("")}` : `<div style="font-size:13px;color:var(--muted);text-align:center;padding:12px 0;margin-bottom:8px">No donations logged yet for this month.</div>`}
+
+        <div class="balance-banner">
+          <div>
+            <div class="balance-label">💰 Remaining Balance</div>
+            <div class="balance-note">Reserved for upcoming charitable activities</div>
+          </div>
+          <div class="balance-val">AED ${fmt(balance)}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ── Mode toggle ────────────────────────────────────────────────
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById("modeAdmin").classList.toggle("active", mode==="admin");
+  document.getElementById("modeMember").classList.toggle("active", mode==="member");
+  document.getElementById("adminView").style.display  = mode==="admin"  ? "block":"none";
+  document.getElementById("memberView").style.display = mode==="member" ? "block":"none";
+  if (mode==="member") renderMemberView();
+}
+
+// ── Month modal ────────────────────────────────────────────────
+function openMonthModal() {
+  document.getElementById("monthModalTitle").textContent = "Add Month";
+  document.getElementById("editMonthId").value = "";
+  document.getElementById("mMonth").value = new Date().getMonth() + 1;
+  document.getElementById("mYear").value  = new Date().getFullYear();
+  document.getElementById("mReceived").value   = "";
+  document.getElementById("mCurrency").value   = "AED";
+  document.getElementById("mInitiative").value = "";
+  document.getElementById("mNotes").value      = "";
+  document.getElementById("monthModal").classList.add("open");
+}
+
+function openEditMonth(monthId) {
+  const m = months.find(m => m.MonthID === monthId);
+  if (!m) return;
+  document.getElementById("monthModalTitle").textContent = "Edit Month";
+  document.getElementById("editMonthId").value    = m.MonthID;
+  document.getElementById("mMonth").value         = m.Month;
+  document.getElementById("mYear").value          = m.Year;
+  document.getElementById("mReceived").value      = m.TotalReceived || "";
+  document.getElementById("mCurrency").value      = m.Currency || "AED";
+  document.getElementById("mInitiative").value    = m.Initiative || "";
+  document.getElementById("mNotes").value         = m.Notes || "";
+  document.getElementById("monthModal").classList.add("open");
+}
+
+async function submitMonth() {
+  const mid        = document.getElementById("editMonthId").value;
+  const month      = document.getElementById("mMonth").value;
+  const year       = document.getElementById("mYear").value;
+  const received   = document.getElementById("mReceived").value;
+  const currency   = document.getElementById("mCurrency").value;
+  const initiative = document.getElementById("mInitiative").value.trim();
+  const notes      = document.getElementById("mNotes").value.trim();
+  if (!month||!year) { showToast("Please select a month and year","error"); return; }
+
+  const data = await apiWrite("saveMonth",{ monthId:mid, month, year, totalReceived:received, currency, initiative, notes });
+  if (data?.success) {
+    closeModal("monthModal");
+    if (mid) {
+      const idx = months.findIndex(m => m.MonthID === mid);
+      if (idx > -1) months[idx] = { ...months[idx], Month:Number(month), Year:Number(year), TotalReceived:Number(received), Currency:currency, Initiative:initiative, Notes:notes };
+    } else {
+      months.unshift({ MonthID:data.monthId, Month:Number(month), Year:Number(year), TotalReceived:Number(received), Currency:currency, Initiative:initiative, Notes:notes });
+    }
+    // Re-sort
+    months.sort((a,b) => { if(a.Year!==b.Year) return Number(b.Year)-Number(a.Year); return Number(b.Month)-Number(a.Month); });
+    renderAll();
+    showToast(mid ? "Month updated!" : "Month added! 🤲");
+  }
+}
+
+// ── Donations ──────────────────────────────────────────────────
+async function submitDonation(monthId) {
+  const cause    = document.getElementById("dCause")?.value.trim();
+  const amount   = document.getElementById("dAmount")?.value;
+  const currency = document.getElementById("dCurrency")?.value || "AED";
+  const date     = document.getElementById("dDate")?.value;
+  const notes    = document.getElementById("dNotes")?.value.trim();
+  if (!cause||!amount) { showToast("Please enter cause and amount","error"); return; }
+
+  const data = await apiWrite("saveDonation",{ monthId, cause, amount, currency, date, notes });
+  if (data?.success) {
+    donations.push({ DonationID:data.donationId, MonthID:monthId, Cause:cause, Amount:Number(amount), Currency:currency, Date:date, Notes:notes });
+    if(document.getElementById("dCause"))  document.getElementById("dCause").value="";
+    if(document.getElementById("dAmount")) document.getElementById("dAmount").value="";
+    if(document.getElementById("dNotes"))  document.getElementById("dNotes").value="";
+    renderMonthDetail(monthId);
+    renderMonthList();
+    renderGlobalStats();
+    showToast("Donation logged! 🤲");
+  }
+}
+
+// ── Delete month ───────────────────────────────────────────────
+function promptDeleteMonth(id, label) {
+  confirmFn = async () => {
+    const data = await apiWrite("deleteMonth",{ monthId:id });
+    if (data?.success) {
+      months    = months.filter(m => m.MonthID !== id);
+      donations = donations.filter(d => d.MonthID !== id);
+      if (selectedMonth?.MonthID === id) {
+        selectedMonth = null;
+        document.getElementById("rightPanel").innerHTML=`<div class="placeholder"><div class="hex">🤲</div><p>Select a month to manage</p></div>`;
+      }
+      renderAll(); showToast("Month deleted");
+    }
+  };
+  document.getElementById("confirmTitle").textContent = "🗑 Delete Month?";
+  document.getElementById("confirmMsg").textContent   = `"${label}" and all its donation records will be permanently deleted.`;
+  document.getElementById("confirmModal").classList.add("open");
+}
+
+function promptDeleteDonation(id, cause) {
+  const mId = selectedMonth?.MonthID;
+  confirmFn = async () => {
+    const data = await apiWrite("deleteDonation",{ donationId:id });
+    if (data?.success) {
+      donations = donations.filter(d => d.DonationID !== id);
+      if (mId) renderMonthDetail(mId);
+      renderMonthList(); renderGlobalStats();
+      showToast("Donation removed");
+    }
+  };
+  document.getElementById("confirmTitle").textContent = "🗑 Remove Donation?";
+  document.getElementById("confirmMsg").textContent   = `Remove the donation to "${cause}"?`;
+  document.getElementById("confirmModal").classList.add("open");
+}
+
+function runConfirm() { closeModal("confirmModal"); if(confirmFn){confirmFn();confirmFn=null;} }
+
+// ── Utils ──────────────────────────────────────────────────────
+async function refreshData(btn) { btn.classList.add("spinning"); await loadCharity(); btn.classList.remove("spinning"); showToast("Refreshed!"); }
+
+function causeIcon(cause) {
+  const c=(cause||"").toLowerCase();
+  if(c.includes("well")||c.includes("bore")||c.includes("water")) return "💧";
+  if(c.includes("food")||c.includes("iftar")||c.includes("meal")||c.includes("distribution")) return "🍽";
+  if(c.includes("medical")||c.includes("chemo")||c.includes("health")||c.includes("hospital")) return "🏥";
+  if(c.includes("edu")||c.includes("school")||c.includes("madrasa")) return "📚";
+  if(c.includes("orphan")||c.includes("child")) return "👶";
+  if(c.includes("masjid")||c.includes("mosque")) return "🕌";
+  return "🤲";
+}
+
+function toAED(amount, currency) {
+  const rates={AED:1,INR:0.044,USD:3.67,GBP:4.63};
+  return amount*(rates[currency]||1);
+}
+function fmt(n) { return Number(n||0).toLocaleString("en-AE",{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function formatDate(d) { if(!d) return "—"; try{return new Date(d).toLocaleDateString("en-AE",{day:"numeric",month:"short",year:"numeric"});}catch{return d;} }
+function showToast(msg,type="success") {
+  const t=document.getElementById("toast"); t.textContent=(type==="success"?"✓ ":"✗ ")+msg; t.className="toast "+type+" show";
+  setTimeout(()=>t.classList.remove("show"),3000);
+}
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+document.querySelectorAll(".modal-overlay").forEach(o=>o.addEventListener("click",e=>{if(e.target===o)o.classList.remove("open");}));
+</script>
+</body>
+</html>
